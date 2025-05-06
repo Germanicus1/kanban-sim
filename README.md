@@ -1,6 +1,7 @@
 # Kanban Simulation (Work in Progress)
 
-This is a real-time multiplayer simulation of the getKanban board game. Built with Go, Supabase, and a lightweight frontend.
+This is a real-time multiplayer simulation of the getKanban board game. Built
+with Go, Supabase, and a lightweight ASTRO frontend.
 
 > ⚠️ This project is **not released** yet. It's under active development.
 
