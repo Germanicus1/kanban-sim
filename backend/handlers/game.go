@@ -204,3 +204,35 @@ func HandleResetGame(w http.ResponseWriter, r *http.Request, gameID string) {
 
 	w.Write([]byte(`{"status":"reset complete"}`))
 }
+
+func HandleCreateGame(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	w.Header().Set("Content-Type", "application/json")
+
+	config, err := internal.LoadBoardConfig("config/board_config.json")
+	if err != nil {
+		http.Error(w, "Failed to load board config", 500)
+		log.Println("LoadBoardConfig error:", err)
+		return
+	}
+
+	game := []map[string]interface{}{
+		{
+			"day":     1,
+			"columns": config.Columns,
+		},
+	}
+
+	resp, _, err := internal.Supabase.
+		From("games").
+		Insert(game, false, "", "representation", "").
+		Execute()
+
+	if err != nil {
+		http.Error(w, "Failed to create game", 500)
+		log.Println("Create game error:", err)
+		return
+	}
+
+	w.Write(resp)
+}
