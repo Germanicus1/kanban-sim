@@ -1,0 +1,18 @@
+---
+import PingTest from '../components/PingTest.jsx';
+---
+
+<html lang="en">
+	<head>
+		<script src="http://localhost:8097"></script>
+		<meta charset="UTF-8" />
+		<title>Kanban Sim MVP</title>
+	</head>
+	<body class="min-h-screen bg-gray-100 text-gray-900 p-8">
+		<h1 class="text-3xl font-bold mb-4">Welcome to Kanban Sim MVP</h1>
+		<p class="mb-4">The server backend should respond at <code>/ping</code>.</p>
+
+		<!-- This must be here -->
+		<PingTest client:load />
+	</body>
+</html>
