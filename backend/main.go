@@ -8,10 +8,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Germanicus1/kanban-sim/internal"
 	"github.com/joho/godotenv"
 	"github.com/supabase-community/postgrest-go"
 	supa "github.com/supabase-community/supabase-go"
-	"github.com/yourusername/kanban-sim/internal"
 )
 
 var supabase *supa.Client
