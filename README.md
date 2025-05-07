@@ -1,7 +1,7 @@
 # Kanban Simulation (Work in Progress)
 
 This is a real-time multiplayer simulation of the getKanban board game. Built
-with Go, Supabase, and a lightweight ASTRO frontend.
+with Go, postgres (docker), and a lightweight ASTRO frontend.
 
 > ⚠️ This project is **not released** yet. It's under active development.
 
@@ -16,7 +16,7 @@ with Go, Supabase, and a lightweight ASTRO frontend.
 
 1. Clone the repo
 2. Set up a Supabase project
-3. Create `.env` with `SUPABASE_URL` and `SUPABASE_KEY`
+3. Create `.env` with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DB_PORT` and `ADMINER_PORT`
 4. Run the server:
 
 ```
