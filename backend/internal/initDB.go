@@ -9,6 +9,8 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+var DB *sql.DB
+
 // InitDB initializes and returns a new DB connection
 func InitDB() (*sql.DB, error) {
 	connStr := fmt.Sprintf(
@@ -23,6 +25,7 @@ func InitDB() (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database: %w", err)
 	}
+	DB = db
 
 	return db, nil
 }
