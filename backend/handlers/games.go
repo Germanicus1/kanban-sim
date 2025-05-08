@@ -31,6 +31,8 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(game)
+	// log.Println(json.NewEncoder(w).Encode(game))
+
 }
 
 // GetGame retrieves a game by ID

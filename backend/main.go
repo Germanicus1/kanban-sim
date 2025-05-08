@@ -52,7 +52,7 @@ func main() {
 		os.Exit(0)
 	}()
 
-	routers.InitRoutes()
+	routers.InitGameRoutes()
 
 	log.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
