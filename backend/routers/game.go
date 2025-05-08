@@ -7,8 +7,9 @@ import (
 )
 
 func InitRoutes() {
+	http.HandleFunc("/", handlers.HandleHome)
 	http.HandleFunc("/ping", handlers.HandlePing)
-	http.HandleFunc("/create-game", handlers.HandleCreateGame)
-	http.HandleFunc("/cards/", handlers.CardRouter)
-	http.HandleFunc("/game/", handlers.GameRouter)
+	// http.HandleFunc("/create-game", handlers.HandleCreateGame)
+	// http.HandleFunc("/cards/", handlers.CardRouter)
+	// http.HandleFunc("/game/", handlers.GameRouter)
 }
