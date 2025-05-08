@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/Germanicus1/kanban-sim/internal"
@@ -22,46 +21,59 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 	var game Game
 	game.Day = 1
 
-	query := `INSERT INTO games (day, columns) VALUES ($1, '[]'::jsonb) RETURNING id, created_at`
+	query := `
+		INSERT INTO games (day, columns) 
+		VALUES ($1, '[]'::jsonb) 
+		RETURNING id, created_at
+	`
 	err := internal.DB.QueryRow(query, game.Day).Scan(&game.ID, &game.CreatedAt)
 	if err != nil {
-		http.Error(w, "Failed to create game", http.StatusInternalServerError)
+		internal.RespondWithError(w, http.StatusInternalServerError, internal.ErrDatabaseError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(game)
-	// log.Println(json.NewEncoder(w).Encode(game))
-
+	internal.RespondWithData(w, game)
 }
 
 // GetGame retrieves a game by ID
 func GetGame(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	if _, err := uuid.Parse(id); err != nil {
-		http.Error(w, "Invalid game ID", http.StatusBadRequest)
+	if id == "" {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
+		return
+	}
+
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
 		return
 	}
 
 	var game Game
 	query := `SELECT id, created_at, day, columns FROM games WHERE id = $1`
-	err := internal.DB.QueryRow(query, id).Scan(&game.ID, &game.CreatedAt, &game.Day, &game.Columns)
+	err = internal.DB.QueryRow(query, parsedID).Scan(&game.ID, &game.CreatedAt, &game.Day, &game.Columns)
 	if err == sql.ErrNoRows {
-		http.Error(w, "Game not found", http.StatusNotFound)
+		internal.RespondWithError(w, http.StatusNotFound, internal.ErrGameNotFound)
 		return
 	} else if err != nil {
-		http.Error(w, "Failed to fetch game", http.StatusInternalServerError)
+		internal.RespondWithError(w, http.StatusInternalServerError, internal.ErrDatabaseError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(game)
+	internal.RespondWithData(w, game)
 }
 
 // UpdateGame updates the day of a game
 func UpdateGame(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	if _, err := uuid.Parse(id); err != nil {
-		http.Error(w, "Invalid game ID", http.StatusBadRequest)
+	if id == "" {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
+		return
+	}
+
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
 		return
 	}
 
@@ -69,46 +81,50 @@ func UpdateGame(w http.ResponseWriter, r *http.Request) {
 		Day int `json:"day"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrValidationFailed)
 		return
 	}
 
 	query := `UPDATE games SET day = $1 WHERE id = $2`
-	_, err := internal.DB.Exec(query, data.Day, id)
+	_, err = internal.DB.Exec(query, data.Day, parsedID)
 	if err != nil {
-		http.Error(w, "Failed to update game", http.StatusInternalServerError)
+		internal.RespondWithError(w, http.StatusInternalServerError, internal.ErrDatabaseError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	internal.RespondWithData(w, map[string]string{
+		"message": "Game updated successfully",
+	})
 }
 
 // DeleteGame deletes a game by ID
-// DeleteGame deletes a game by ID
 func DeleteGame(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	if _, err := uuid.Parse(id); err != nil {
-		http.Error(w, "Invalid game ID", http.StatusBadRequest)
+	if id == "" {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
 		return
 	}
 
-	log.Printf("Attempting to delete game with ID: %s", id)
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
+		return
+	}
 
 	query := `DELETE FROM games WHERE id = $1`
-	result, err := internal.DB.Exec(query, id)
+	result, err := internal.DB.Exec(query, parsedID)
 	if err != nil {
-		log.Printf("SQL error: %v", err)
-		http.Error(w, "Failed to delete game", http.StatusInternalServerError)
+		internal.RespondWithError(w, http.StatusInternalServerError, internal.ErrDatabaseError)
 		return
 	}
 
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		log.Printf("Game not found for ID: %s", id)
-		http.Error(w, "Game not found", http.StatusNotFound)
+		internal.RespondWithError(w, http.StatusNotFound, internal.ErrGameNotFound)
 		return
 	}
 
-	log.Printf("Successfully deleted game with ID: %s", id)
-	w.WriteHeader(http.StatusNoContent)
+	internal.RespondWithData(w, map[string]string{
+		"message": "Game deleted successfully",
+	})
 }

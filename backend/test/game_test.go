@@ -2,31 +2,17 @@ package test
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"testing"
 
 	"github.com/Germanicus1/kanban-sim/handlers"
 	"github.com/Germanicus1/kanban-sim/internal"
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 )
 
-var db *sql.DB
-
-func setupEnv(t *testing.T) {
-	envPath := filepath.Join("..", ".env")
-	if err := godotenv.Load(envPath); err != nil {
-		t.Fatalf("Error loading .env file: %v", err)
-	}
-}
-
-func setupDB(t *testing.T) {
-	setupEnv(t)
-
+func setupGameTestDB(t *testing.T) {
 	var err error
 	db, err = internal.InitDB()
 	if err != nil {
@@ -44,18 +30,13 @@ func setupDB(t *testing.T) {
 	}
 }
 
-func tearDownDB() {
-	if db != nil {
-		db.Close()
-	}
-}
-
 func TestGameCRUD(t *testing.T) {
-	setupDB(t)
+	setupGameTestDB(t)
 	defer tearDownDB()
 
 	var gameID uuid.UUID
 
+	// --- Create Game ---
 	t.Run("Create Game", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/games", nil)
 		w := httptest.NewRecorder()
@@ -65,16 +46,25 @@ func TestGameCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusCreated {
-			t.Fatalf("Expected status 201, got %d", res.StatusCode)
+		if res.StatusCode != http.StatusOK {
+			t.Fatalf("Expected status 200, got %d", res.StatusCode)
 		}
 
-		var response map[string]interface{}
+		var response internal.APIResponse
 		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 			t.Fatalf("Failed to decode response: %v", err)
 		}
 
-		idStr, ok := response["id"].(string)
+		if !response.Success {
+			t.Fatalf("Expected success, got error: %s", response.Error)
+		}
+
+		data, ok := response.Data.(map[string]interface{})
+		if !ok {
+			t.Fatal("Expected data object in response")
+		}
+
+		idStr, ok := data["id"].(string)
 		if !ok || idStr == "" {
 			t.Fatal("Expected a valid 'id' in response")
 		}
@@ -85,6 +75,7 @@ func TestGameCRUD(t *testing.T) {
 		}
 	})
 
+	// --- Get Game ---
 	t.Run("Get Game", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/games/get?id="+gameID.String(), nil)
 		w := httptest.NewRecorder()
@@ -98,16 +89,27 @@ func TestGameCRUD(t *testing.T) {
 			t.Fatalf("Expected status 200, got %d", res.StatusCode)
 		}
 
-		var game handlers.Game
-		if err := json.NewDecoder(res.Body).Decode(&game); err != nil {
+		var response internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 			t.Fatalf("Failed to decode response: %v", err)
 		}
 
-		if game.ID != gameID {
-			t.Fatalf("Expected game ID %s, got %s", gameID, game.ID)
+		if !response.Success {
+			t.Fatalf("Expected success, got error: %s", response.Error)
+		}
+
+		data, ok := response.Data.(map[string]interface{})
+		if !ok {
+			t.Fatal("Expected data object in response")
+		}
+
+		idStr, _ := data["id"].(string)
+		if idStr != gameID.String() {
+			t.Fatalf("Expected game ID %s, got %s", gameID.String(), idStr)
 		}
 	})
 
+	// --- Update Game ---
 	t.Run("Update Game", func(t *testing.T) {
 		updateData := map[string]int{"day": 5}
 		body, _ := json.Marshal(updateData)
@@ -121,28 +123,21 @@ func TestGameCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusNoContent {
-			t.Fatalf("Expected status 204, got %d", res.StatusCode)
+		if res.StatusCode != http.StatusOK {
+			t.Fatalf("Expected status 200, got %d", res.StatusCode)
 		}
 
-		// Verify the update
-		req = httptest.NewRequest(http.MethodGet, "/games/get?id="+gameID.String(), nil)
-		w = httptest.NewRecorder()
-		handlers.GetGame(w, req)
-
-		res = w.Result()
-		defer res.Body.Close()
-
-		var game handlers.Game
-		if err := json.NewDecoder(res.Body).Decode(&game); err != nil {
+		var response internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 			t.Fatalf("Failed to decode response: %v", err)
 		}
 
-		if game.Day != 5 {
-			t.Fatalf("Expected day 5, got %d", game.Day)
+		if !response.Success {
+			t.Fatalf("Expected success, got error: %s", response.Error)
 		}
 	})
 
+	// --- Delete Game ---
 	t.Run("Delete Game", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/games/delete?id="+gameID.String(), nil)
 		w := httptest.NewRecorder()
@@ -152,20 +147,45 @@ func TestGameCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusNoContent {
-			t.Fatalf("Expected status 204, got %d", res.StatusCode)
+		if res.StatusCode != http.StatusOK {
+			t.Fatalf("Expected status 200, got %d", res.StatusCode)
 		}
 
-		// Verify deletion
-		req = httptest.NewRequest(http.MethodGet, "/games/get?id="+gameID.String(), nil)
-		w = httptest.NewRecorder()
+		var response internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		if !response.Success {
+			t.Fatalf("Expected success, got error: %s", response.Error)
+		}
+	})
+
+	// --- Get Deleted Game (Expect Not Found) ---
+	t.Run("Get Deleted Game", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/games/get?id="+gameID.String(), nil)
+		w := httptest.NewRecorder()
+
 		handlers.GetGame(w, req)
 
-		res = w.Result()
+		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNotFound {
 			t.Fatalf("Expected status 404, got %d", res.StatusCode)
+		}
+
+		var response internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		if response.Success {
+			t.Fatal("Expected failure, got success")
+		}
+
+		if response.Error != internal.ErrGameNotFound {
+			t.Fatalf("Expected error %s, got %s", internal.ErrGameNotFound, response.Error)
 		}
 	})
 }

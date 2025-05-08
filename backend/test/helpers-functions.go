@@ -1,0 +1,45 @@
+package test
+
+import (
+	"database/sql"
+	"path/filepath"
+	"testing"
+
+	"github.com/Germanicus1/kanban-sim/internal"
+	"github.com/joho/godotenv"
+)
+
+var db *sql.DB
+
+func setupEnv(t *testing.T) {
+	envPath := filepath.Join("..", ".env")
+	if err := godotenv.Load(envPath); err != nil {
+		t.Fatalf("Error loading .env file: %v", err)
+	}
+}
+
+func setupDB(t *testing.T) {
+	setupEnv(t)
+
+	var err error
+	db, err = internal.InitDB()
+	if err != nil {
+		t.Fatalf("Failed to initialize DB: %v", err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		t.Fatalf("Database connection failed: %v", err)
+	}
+
+	_, err = db.Exec("DELETE FROM games")
+	if err != nil {
+		t.Fatalf("Failed to clean games table: %v", err)
+	}
+}
+
+func tearDownDB() {
+	if db != nil {
+		db.Close()
+	}
+}
