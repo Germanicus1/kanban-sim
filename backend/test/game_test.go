@@ -12,28 +12,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func setupGameTestDB(t *testing.T) {
-	var err error
-	db, err = internal.InitDB()
-	if err != nil {
-		t.Fatalf("Failed to initialize DB: %v", err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		t.Fatalf("Database connection failed: %v", err)
-	}
-
-	_, err = db.Exec("DELETE FROM games")
-	if err != nil {
-		t.Fatalf("Failed to clean games table: %v", err)
-	}
-}
-
 func TestGameCRUD(t *testing.T) {
-	setupGameTestDB(t)
+	setupDB(t, "games")
 	defer tearDownDB()
-
 	var gameID uuid.UUID
 
 	// --- Create Game ---

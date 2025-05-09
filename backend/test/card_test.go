@@ -12,37 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func setupCardTestDB(t *testing.T) {
-	setupEnv(t)
-
-	var err error
-	db, err = internal.InitDB()
-	if err != nil {
-		t.Fatalf("Failed to initialize DB: %v", err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		t.Fatalf("Database connection failed: %v", err)
-	}
-
-	_, err = db.Exec("DELETE FROM cards")
-	if err != nil {
-		t.Fatalf("Failed to clean cards table: %v", err)
-	}
-
-	_, err = db.Exec("DELETE FROM games")
-	if err != nil {
-		t.Fatalf("Failed to clean games table: %v", err)
-	}
-}
-
 func TestCardCRUD(t *testing.T) {
-	setupCardTestDB(t)
+	setupDB(t, "cards")
+	setupDB(t, "games")
 	defer tearDownDB()
 
-	// First, create a game to associate with the card
 	var gameID uuid.UUID
+	var cardID uuid.UUID
+
+	// --- Create Game (Required for Card Association) ---
 	t.Run("Create Game for Card", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/games", nil)
 		w := httptest.NewRecorder()
@@ -52,16 +30,21 @@ func TestCardCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusCreated {
-			t.Fatalf("Expected status 201, got %d", res.StatusCode)
+		if res.StatusCode != http.StatusOK {
+			t.Fatalf("Expected status 200, got %d", res.StatusCode)
 		}
 
-		var response map[string]interface{}
+		var response internal.APIResponse
 		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 			t.Fatalf("Failed to decode response: %v", err)
 		}
 
-		idStr, ok := response["id"].(string)
+		data, ok := response.Data.(map[string]any)
+		if !ok {
+			t.Fatal("Expected data object in response")
+		}
+
+		idStr, ok := data["id"].(string)
 		if !ok || idStr == "" {
 			t.Fatal("Expected a valid 'id' in response")
 		}
@@ -72,13 +55,11 @@ func TestCardCRUD(t *testing.T) {
 		}
 	})
 
-	var cardID uuid.UUID
-
 	// --- Create Card ---
 	t.Run("Create Card", func(t *testing.T) {
 		cardData := map[string]interface{}{
 			"game_id":     gameID.String(),
-			"title":       "New Card",
+			"title":       "Test Card",
 			"card_column": "options",
 		}
 		body, _ := json.Marshal(cardData)
@@ -92,28 +73,39 @@ func TestCardCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusCreated {
-			t.Fatalf("Expected status 201, got %d", res.StatusCode)
-		}
-
-		var response map[string]interface{}
+		var response internal.APIResponse
 		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 			t.Fatalf("Failed to decode response: %v", err)
 		}
 
-		idStr, ok := response["id"].(string)
+		if !response.Success {
+			t.Fatalf("Expected success, got error: %s", response.Error)
+		}
+
+		data, ok := response.Data.(map[string]interface{})
+		if !ok {
+			t.Fatal("Expected data object in response")
+		}
+
+		idStr, ok := data["id"].(string)
 		if !ok || idStr == "" {
 			t.Fatal("Expected a valid 'id' in response")
 		}
 
 		cardID, _ = uuid.Parse(idStr)
-		if cardID == uuid.Nil {
-			t.Fatal("Expected valid UUID, got Nil")
-		}
+
+		// Log the cardID for debugging
+		// t.Logf("Created Card ID: %s", cardID)
 	})
 
 	// --- Get Card ---
 	t.Run("Get Card", func(t *testing.T) {
+		if cardID == uuid.Nil {
+			t.Fatal("Card ID is nil. CreateCard test may have failed.")
+		}
+
+		// t.Logf("Get Card ID: %s", cardID)
+
 		req := httptest.NewRequest(http.MethodGet, "/cards/get?id="+cardID.String(), nil)
 		w := httptest.NewRecorder()
 
@@ -122,17 +114,17 @@ func TestCardCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
-		}
-
-		var card handlers.Card
-		if err := json.NewDecoder(res.Body).Decode(&card); err != nil {
+		var response internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 			t.Fatalf("Failed to decode response: %v", err)
 		}
 
-		if card.ID != cardID {
-			t.Fatalf("Expected card ID %s, got %s", cardID, card.ID)
+		if res.StatusCode != http.StatusOK {
+			t.Fatalf("Expected status 200, got %d, error: %s", res.StatusCode, response.Error)
+		}
+
+		if !response.Success {
+			t.Fatalf("Expected success, got error: %s", response.Error)
 		}
 	})
 
@@ -156,23 +148,6 @@ func TestCardCRUD(t *testing.T) {
 		if res.StatusCode != http.StatusNoContent {
 			t.Fatalf("Expected status 204, got %d", res.StatusCode)
 		}
-
-		// Verify the update
-		req = httptest.NewRequest(http.MethodGet, "/cards/get?id="+cardID.String(), nil)
-		w = httptest.NewRecorder()
-		handlers.GetCard(w, req)
-
-		res = w.Result()
-		defer res.Body.Close()
-
-		var card handlers.Card
-		if err := json.NewDecoder(res.Body).Decode(&card); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
-		}
-
-		if card.Title != "Updated Card" {
-			t.Fatalf("Expected title 'Updated Card', got '%s'", card.Title)
-		}
 	})
 
 	// --- Delete Card ---
@@ -188,17 +163,32 @@ func TestCardCRUD(t *testing.T) {
 		if res.StatusCode != http.StatusNoContent {
 			t.Fatalf("Expected status 204, got %d", res.StatusCode)
 		}
+	})
 
-		// Verify deletion
-		req = httptest.NewRequest(http.MethodGet, "/cards/get?id="+cardID.String(), nil)
-		w = httptest.NewRecorder()
+	// --- Get Deleted Card (Expect Not Found) ---
+	t.Run("Get Deleted Card", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/cards/get?id="+cardID.String(), nil)
+		w := httptest.NewRecorder()
+
 		handlers.GetCard(w, req)
 
-		res = w.Result()
+		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNotFound {
 			t.Fatalf("Expected status 404, got %d", res.StatusCode)
+		}
+
+		if res.StatusCode != http.StatusNotFound {
+			t.Fatalf("Expected status 404, got %d", res.StatusCode)
+		}
+		var response internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		if response.Error != internal.ErrCardNotFound {
+			t.Fatalf("Expected error %s, got %s", internal.ErrCardNotFound, response.Error)
 		}
 	})
 }

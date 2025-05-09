@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/Germanicus1/kanban-sim/internal"
@@ -28,12 +29,12 @@ func CreateCard(w http.ResponseWriter, r *http.Request) {
 	var card Card
 
 	if err := json.NewDecoder(r.Body).Decode(&card); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		internal.RespondWithError(w, http.StatusBadRequest, "INVALID_REQUEST_BODY")
 		return
 	}
 
 	if card.GameID == uuid.Nil {
-		http.Error(w, "GameID is required", http.StatusBadRequest)
+		internal.RespondWithError(w, http.StatusBadRequest, "GAME_ID_REQUIRED")
 		return
 	}
 
@@ -42,36 +43,57 @@ func CreateCard(w http.ResponseWriter, r *http.Request) {
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id
 	`
-	err := internal.DB.QueryRow(query, card.GameID, card.Title, card.CardColumn, card.ClassOfService, card.ValueEstimate, card.EffortAnalysis, card.EffortDev, card.EffortTest, card.SelectedDay, card.DeployedDay).Scan(&card.ID)
+	err := internal.DB.QueryRow(
+		query,
+		card.GameID,
+		card.Title,
+		card.CardColumn,
+		card.ClassOfService,
+		card.ValueEstimate,
+		card.EffortAnalysis,
+		card.EffortDev,
+		card.EffortTest,
+		card.SelectedDay,
+		card.DeployedDay,
+	).Scan(&card.ID)
+
 	if err != nil {
-		http.Error(w, "Failed to create card", http.StatusInternalServerError)
+		status, errCode := internal.MapPostgresError(err)
+		internal.RespondWithError(w, status, errCode)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(card)
+	internal.RespondWithData(w, card)
 }
 
 // GetCard retrieves a card by ID
 func GetCard(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	if _, err := uuid.Parse(id); err != nil {
-		http.Error(w, "Invalid card ID", http.StatusBadRequest)
+
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		internal.RespondWithError(w, http.StatusBadRequest, "INVALID_CARD_ID")
 		return
 	}
+
+	log.Printf("Looking for card with ID: %s", parsedID)
 
 	var card Card
-	query := `SELECT id, game_id, title, card_column, class_of_service, value_estimate, effort_analysis, effort_development, effort_test, selected_day, deployed_day FROM cards WHERE id = $1`
-	err := internal.DB.QueryRow(query, id).Scan(&card.ID, &card.GameID, &card.Title, &card.CardColumn, &card.ClassOfService, &card.ValueEstimate, &card.EffortAnalysis, &card.EffortDev, &card.EffortTest, &card.SelectedDay, &card.DeployedDay)
-	if err == sql.ErrNoRows {
-		http.Error(w, "Card not found", http.StatusNotFound)
-		return
-	} else if err != nil {
-		http.Error(w, "Failed to fetch card", http.StatusInternalServerError)
+	query := `SELECT id, game_id, title, card_column FROM cards WHERE id = $1`
+	err = internal.DB.QueryRow(query, parsedID).Scan(&card.ID, &card.GameID, &card.Title, &card.CardColumn)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("Card not found with ID: %s", parsedID)
+			internal.RespondWithError(w, http.StatusNotFound, "CARD_NOT_FOUND")
+		} else {
+			log.Printf("Database error: %v", err)
+			internal.RespondWithError(w, http.StatusInternalServerError, "DATABASE_ERROR")
+		}
 		return
 	}
 
-	json.NewEncoder(w).Encode(card)
+	internal.RespondWithData(w, card)
 }
 
 // UpdateCard updates card details

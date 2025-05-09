@@ -18,9 +18,8 @@ func setupEnv(t *testing.T) {
 	}
 }
 
-func setupDB(t *testing.T) {
+func setupDB(t *testing.T, tableName string) {
 	setupEnv(t)
-
 	var err error
 	db, err = internal.InitDB()
 	if err != nil {
@@ -32,7 +31,7 @@ func setupDB(t *testing.T) {
 		t.Fatalf("Database connection failed: %v", err)
 	}
 
-	_, err = db.Exec("DELETE FROM games")
+	_, err = db.Exec("DELETE FROM " + tableName)
 	if err != nil {
 		t.Fatalf("Failed to clean games table: %v", err)
 	}
