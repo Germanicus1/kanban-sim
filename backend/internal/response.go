@@ -5,26 +5,27 @@ import (
 	"net/http"
 )
 
+// APIResponse is the standard envelope for all API responses.
 type APIResponse struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data,omitempty"`
 	Error   string      `json:"error,omitempty"`
 }
 
+// RespondWithError writes a JSON error response.
 func RespondWithError(w http.ResponseWriter, status int, errCode string) {
-	response := APIResponse{
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(APIResponse{
 		Success: false,
 		Error:   errCode,
-	}
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(response)
+	})
 }
 
+// RespondWithData writes a JSON success response.
 func RespondWithData(w http.ResponseWriter, data interface{}) {
-	response := APIResponse{
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(APIResponse{
 		Success: true,
 		Data:    data,
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	})
 }

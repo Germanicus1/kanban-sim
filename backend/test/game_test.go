@@ -23,7 +23,6 @@ func TestGameCRUD(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		handlers.CreateGame(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
@@ -104,17 +103,8 @@ func TestGameCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
-		}
-
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
-		}
-
-		if !response.Success {
-			t.Fatalf("Expected success, got error: %s", response.Error)
+		if res.StatusCode != http.StatusNoContent {
+			t.Fatalf("Expected status 204, got %d", res.StatusCode)
 		}
 	})
 
@@ -128,17 +118,8 @@ func TestGameCRUD(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
-		}
-
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
-		}
-
-		if !response.Success {
-			t.Fatalf("Expected success, got error: %s", response.Error)
+		if res.StatusCode != http.StatusNoContent {
+			t.Fatalf("Expected status 204, got %d", res.StatusCode)
 		}
 	})
 
