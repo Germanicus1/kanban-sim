@@ -11,4 +11,5 @@ func InitCardRoutes() {
 	http.HandleFunc("/cards/get", handlers.GetCard)       // GET /cards?id={id}
 	http.HandleFunc("/cards/update", handlers.UpdateCard) // PUT /cards?id={id}
 	http.HandleFunc("/cards/delete", handlers.DeleteCard) // DELETE /cards?id={id}
+	http.HandleFunc("/cards/move", handlers.MoveCard)
 }

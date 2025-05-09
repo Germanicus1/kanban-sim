@@ -173,3 +173,54 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	}
 	internal.RespondWithData(w, events)
 }
+
+// GetBoard returns all cards for a game, grouped by column.
+func GetBoard(w http.ResponseWriter, r *http.Request) {
+	gameIDStr := r.URL.Query().Get("game_id")
+	gameID, err := uuid.Parse(gameIDStr)
+	if err != nil {
+		internal.RespondWithError(w, http.StatusBadRequest, internal.ErrInvalidGameID)
+		return
+	}
+
+	rows, err := internal.DB.Query(`
+        SELECT
+            id, game_id, title, card_column,
+            class_of_service, value_estimate,
+            effort_analysis, effort_development, effort_test,
+            selected_day, deployed_day
+        FROM cards
+        WHERE game_id = $1
+        ORDER BY created_at
+    `, gameID)
+	if err != nil {
+		status, code := internal.MapPostgresError(err)
+		internal.RespondWithError(w, status, code)
+		return
+	}
+	defer rows.Close()
+
+	board := map[string][]Card{}
+	for rows.Next() {
+		var c Card
+		if err := rows.Scan(
+			&c.ID,
+			&c.GameID,
+			&c.Title,
+			&c.CardColumn,
+			&c.ClassOfService,
+			&c.ValueEstimate,
+			&c.EffortAnalysis,
+			&c.EffortDev,
+			&c.EffortTest,
+			&c.SelectedDay,
+			&c.DeployedDay,
+		); err != nil {
+			internal.RespondWithError(w, http.StatusInternalServerError, internal.ErrDatabaseError)
+			return
+		}
+		board[c.CardColumn] = append(board[c.CardColumn], c)
+	}
+
+	internal.RespondWithData(w, board)
+}
