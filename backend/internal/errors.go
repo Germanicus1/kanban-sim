@@ -15,6 +15,7 @@ const (
 	ErrDuplicateEntry   = "DUPLICATE_ENTRY"
 	ErrInvalidInput     = "INVALID_INPUT"
 	ErrCardNotFound     = "CARD_NOT_FOUND"
+	ErrInvalidCardID    = "INVALID_CARD_ID"
 )
 
 // MapPostgresError maps PostgreSQL error codes to HTTP status codes and error messages
