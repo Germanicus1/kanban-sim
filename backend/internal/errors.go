@@ -16,6 +16,8 @@ const (
 	ErrInvalidInput     = "INVALID_INPUT"
 	ErrCardNotFound     = "CARD_NOT_FOUND"
 	ErrInvalidCardID    = "INVALID_CARD_ID"
+	ErrInvalidPlayerID  = "INVALID_PLAYER_ID"
+	ErrPlayerNotFound   = "PLAYER_NOT_FOUND"
 )
 
 // MapPostgresError maps PostgreSQL error codes to HTTP status codes and error messages

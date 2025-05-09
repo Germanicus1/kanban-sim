@@ -17,202 +17,132 @@ func TestPlayerCRUD(t *testing.T) {
 	setupDB(t, "games")
 	defer tearDownDB()
 
-	// First, create a game to associate with the player
-	var gameID uuid.UUID
-	var playerID uuid.UUID
+	var gameID, playerID uuid.UUID
+
+	// Create a game for the player
 	t.Run("Create Game for Player", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/games", nil)
 		w := httptest.NewRecorder()
-
 		handlers.CreateGame(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
+			t.Fatalf("Expected 200, got %d", res.StatusCode)
 		}
-
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
+		var resp internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
 		}
-
-		if !response.Success {
-			t.Fatalf("Expected success, got error: %s", response.Error)
-		}
-
-		data, ok := response.Data.(map[string]interface{})
-		if !ok {
-			t.Fatal("Expected data object in response")
-		}
-
-		gameIDStr, _ := data["id"].(string)
-		if gameIDStr == "" {
-			t.Fatal("Expected a valid game ID")
-		}
-
-		gameID, _ = uuid.Parse(gameIDStr)
-		t.Logf("Created Game ID for Player: %s", gameIDStr)
+		m := resp.Data.(map[string]interface{})
+		gameID, _ = uuid.Parse(m["id"].(string))
 	})
 
-	// --- Create Player ---
+	// CreatePlayer
 	t.Run("Create Player", func(t *testing.T) {
-		playerData := map[string]interface{}{
+		payload := map[string]interface{}{
 			"game_id": gameID.String(),
 			"name":    "Test Player",
 		}
-		body, _ := json.Marshal(playerData)
-
-		t.Logf("Payload for Create Player: %s", string(body))
+		body, _ := json.Marshal(payload)
 
 		req := httptest.NewRequest(http.MethodPost, "/players", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
-
 		handlers.CreatePlayer(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
-		}
-
 		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d, error: %s", res.StatusCode, response.Error)
+			t.Fatalf("Expected 200, got %d", res.StatusCode)
 		}
-
-		if !response.Success {
-			t.Fatalf("Expected success, got error: %s", response.Error)
+		var resp internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
 		}
-
-		data, ok := response.Data.(map[string]interface{})
-		if !ok {
-			t.Fatal("Expected data object in response")
+		if !resp.Success {
+			t.Fatal("Expected success:", resp.Error)
 		}
-
-		playerIDStr, _ := data["id"].(string)
-		if playerIDStr == "" {
-			t.Fatal("Expected a valid player ID")
-		}
-
-		playerID, _ = uuid.Parse(playerIDStr)
-		t.Logf("Created Player ID: %s", playerIDStr)
+		m := resp.Data.(map[string]interface{})
+		playerID, _ = uuid.Parse(m["id"].(string))
 	})
 
-	// --- Get Player ---
+	// GetPlayer
 	t.Run("Get Player", func(t *testing.T) {
-		if playerID == uuid.Nil {
-			t.Fatal("Player ID is nil. Create_Player test may have failed.")
-		}
-
-		t.Logf("Fetching Player with ID: %s", playerID)
-
 		req := httptest.NewRequest(http.MethodGet, "/players/get?id="+playerID.String(), nil)
 		w := httptest.NewRecorder()
-
 		handlers.GetPlayer(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
+			t.Fatalf("Expected 200, got %d", res.StatusCode)
 		}
-
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
+		var resp internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
 		}
-
-		if !response.Success {
-			t.Fatalf("Expected success, got error: %s", response.Error)
+		if !resp.Success {
+			t.Fatal("Expected success:", resp.Error)
 		}
 	})
 
-	// --- Update Player ---
+	// UpdatePlayer
 	t.Run("Update Player", func(t *testing.T) {
-		if playerID == uuid.Nil {
-			t.Fatal("Player ID is nil. Create_Player test may have failed.")
-		}
-
-		updateData := map[string]string{
+		payload := map[string]interface{}{
 			"name": "Jane Doe",
 		}
-		body, _ := json.Marshal(updateData)
-
-		t.Logf("Payload for Update Player: %s", string(body))
+		body, _ := json.Marshal(payload)
 
 		req := httptest.NewRequest(http.MethodPut, "/players/update?id="+playerID.String(), bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
-
 		handlers.UpdatePlayer(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNoContent {
-			t.Fatalf("Expected status 204, got %d", res.StatusCode)
+			t.Fatalf("Expected 204, got %d", res.StatusCode)
 		}
 
-		// Verify the update by fetching the player
+		// verify via GetPlayer
 		req = httptest.NewRequest(http.MethodGet, "/players/get?id="+playerID.String(), nil)
 		w = httptest.NewRecorder()
-
 		handlers.GetPlayer(w, req)
-
 		res = w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
+		var resp internal.APIResponse
+		if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
 		}
-
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
+		m := resp.Data.(map[string]interface{})
+		if m["name"] != "Jane Doe" {
+			t.Fatalf("Expected name Jane Doe, got %v", m["name"])
 		}
-
-		data, ok := response.Data.(map[string]interface{})
-		if !ok {
-			t.Fatal("Expected data object in response")
-		}
-
-		name, _ := data["name"].(string)
-		if name != "Jane Doe" {
-			t.Fatalf("Expected name 'Jane Doe', got '%s'", name)
-		}
-
-		t.Logf("Player name successfully updated to: %s", name)
 	})
 
-	// --- Delete Player ---
+	// DeletePlayer
 	t.Run("Delete Player", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodDelete, "/players/delete?id="+playerID.String(), nil)
 		w := httptest.NewRecorder()
-
 		handlers.DeletePlayer(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNoContent {
-			t.Fatalf("Expected status 204, got %d", res.StatusCode)
+			t.Fatalf("Expected 204, got %d", res.StatusCode)
 		}
 
-		// Verify deletion
+		// verify deletion
 		req = httptest.NewRequest(http.MethodGet, "/players/get?id="+playerID.String(), nil)
 		w = httptest.NewRecorder()
 		handlers.GetPlayer(w, req)
-
 		res = w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNotFound {
-			t.Fatalf("Expected status 404, got %d", res.StatusCode)
+			t.Fatalf("Expected 404, got %d", res.StatusCode)
 		}
 	})
 }
