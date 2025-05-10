@@ -3,9 +3,13 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/Germanicus1/kanban-sim/config"
 	"github.com/Germanicus1/kanban-sim/internal"
 	"github.com/google/uuid"
 )
@@ -17,23 +21,112 @@ type Game struct {
 	Columns   json.RawMessage `json:"columns"`
 }
 
-// CreateGame creates a new game.
-func CreateGame(w http.ResponseWriter, r *http.Request) {
-	var g Game
-	g.Day = 1
+const configPath = "config/board_config.json"
 
-	const q = `
-		INSERT INTO games (day, columns)
-		VALUES ($1, '[]'::jsonb)
-		RETURNING id, created_at
+// loadBoardConfig loads the board configuration.
+func loadBoardConfig() (*config.BoardConfig, error) {
+	absPath, err := filepath.Abs(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path: %w", err)
+	}
+
+	file, err := os.Open(absPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config file: %w", err)
+	}
+	defer file.Close()
+
+	var cfg config.BoardConfig
+	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("failed to decode config JSON: %w", err)
+	}
+
+	return &cfg, nil
+}
+
+// CreateGame creates a new game and seeds it with the default configuration.
+func CreateGame(w http.ResponseWriter, r *http.Request) {
+	boardConfig, err := loadBoardConfig()
+	if err != nil {
+		internal.RespondWithError(w, http.StatusInternalServerError, "Configuration not loaded: "+err.Error())
+		return
+	}
+
+	gameID := uuid.New()
+	createdAt := time.Now().Format(time.RFC3339)
+	day := 1
+
+	const insertGameQuery = `
+		INSERT INTO games (id, created_at, day)
+		VALUES ($1, $2, $3)
 	`
-	if err := internal.DB.QueryRow(q, g.Day).Scan(&g.ID, &g.CreatedAt); err != nil {
+	_, err = internal.DB.Exec(insertGameQuery, gameID, createdAt, day)
+	if err != nil {
 		status, code := internal.MapPostgresError(err)
 		internal.RespondWithError(w, status, code)
 		return
 	}
 
-	internal.RespondWithData(w, g)
+	// Insert Columns
+	for index, column := range boardConfig.Columns {
+		const insertColumnQuery = `
+			INSERT INTO cards (
+				id, game_id, title, card_column, column_order
+			) VALUES ($1, $2, $3, $4, $5)
+		`
+
+		_, err = internal.DB.Exec(
+			insertColumnQuery,
+			uuid.New(),
+			gameID,
+			column.Name,
+			column.ID,
+			index,
+		)
+
+		if err != nil {
+			status, code := internal.MapPostgresError(err)
+			internal.RespondWithError(w, status, code)
+			return
+		}
+	}
+
+	// Insert Cards
+	for _, card := range boardConfig.InitialCards {
+		const insertCardQuery = `
+			INSERT INTO cards (
+				id, game_id, title, card_column, class_of_service, value_estimate,
+				effort_analysis, effort_development, effort_test, selected_day, deployed_day
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		`
+
+		_, err = internal.DB.Exec(
+			insertCardQuery,
+			uuid.New(),
+			gameID,
+			card.ID,
+			card.ColumnID,
+			card.ClassOfService,
+			card.ValueEstimate,
+			card.Effort.Analysis,
+			card.Effort.Development,
+			card.Effort.Test,
+			card.SelectedDay,
+			card.DeployedDay,
+		)
+
+		if err != nil {
+			status, code := internal.MapPostgresError(err)
+			internal.RespondWithError(w, status, code)
+			return
+		}
+	}
+
+	internal.RespondWithData(w, map[string]interface{}{
+		"id":        gameID,
+		"createdAt": createdAt,
+		"day":       day,
+	})
 }
 
 // GetGame retrieves a game by ID.

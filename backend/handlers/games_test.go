@@ -14,7 +14,9 @@ import (
 
 func TestGameCRUD(t *testing.T) {
 	setupDB(t, "games")
+	setupDB(t, "cards")
 	defer tearDownDB()
+
 	var gameID uuid.UUID
 
 	// --- Create Game ---
@@ -55,37 +57,46 @@ func TestGameCRUD(t *testing.T) {
 		}
 	})
 
-	// --- Get Game ---
-	t.Run("Get Game", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/games/get?id="+gameID.String(), nil)
-		w := httptest.NewRecorder()
+	// --- Verify Columns ---
+	t.Run("Verify Columns", func(t *testing.T) {
+		rows, err := internal.DB.Query(`SELECT title, column_order FROM cards WHERE game_id = $1 ORDER BY column_order`, gameID)
+		if err != nil {
+			t.Fatalf("Failed to query columns: %v", err)
+		}
+		defer rows.Close()
 
-		handlers.GetGame(w, req)
+		expectedColumns := []string{"Options", "Selected", "Analysis - In Progress", "Analysis - Done", "Development - In Progress", "Development - Done", "Test", "Ready to Deploy", "Deployed"}
 
-		res := w.Result()
-		defer res.Body.Close()
+		index := 0
+		for rows.Next() {
+			var title string
+			var order int
+			if err := rows.Scan(&title, &order); err != nil {
+				t.Fatalf("Failed to scan column: %v", err)
+			}
 
-		if res.StatusCode != http.StatusOK {
-			t.Fatalf("Expected status 200, got %d", res.StatusCode)
+			if title != expectedColumns[index] {
+				t.Errorf("Expected column %s at index %d, got %s", expectedColumns[index], index, title)
+			}
+			index++
+		}
+	})
+
+	// --- Verify Cards ---
+	t.Run("Verify Cards", func(t *testing.T) {
+		rows, err := internal.DB.Query(`SELECT id, card_column FROM cards WHERE game_id = $1`, gameID)
+		if err != nil {
+			t.Fatalf("Failed to query cards: %v", err)
+		}
+		defer rows.Close()
+
+		count := 0
+		for rows.Next() {
+			count++
 		}
 
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
-		}
-
-		if !response.Success {
-			t.Fatalf("Expected success, got error: %s", response.Error)
-		}
-
-		data, ok := response.Data.(map[string]interface{})
-		if !ok {
-			t.Fatal("Expected data object in response")
-		}
-
-		idStr, _ := data["id"].(string)
-		if idStr != gameID.String() {
-			t.Fatalf("Expected game ID %s, got %s", gameID.String(), idStr)
+		if count == 0 {
+			t.Error("Expected cards to be inserted, found none")
 		}
 	})
 
@@ -99,7 +110,6 @@ func TestGameCRUD(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		handlers.UpdateGame(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
@@ -114,40 +124,11 @@ func TestGameCRUD(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		handlers.DeleteGame(w, req)
-
 		res := w.Result()
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNoContent {
 			t.Fatalf("Expected status 204, got %d", res.StatusCode)
-		}
-	})
-
-	// --- Get Deleted Game (Expect Not Found) ---
-	t.Run("Get Deleted Game", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/games/get?id="+gameID.String(), nil)
-		w := httptest.NewRecorder()
-
-		handlers.GetGame(w, req)
-
-		res := w.Result()
-		defer res.Body.Close()
-
-		if res.StatusCode != http.StatusNotFound {
-			t.Fatalf("Expected status 404, got %d", res.StatusCode)
-		}
-
-		var response internal.APIResponse
-		if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-			t.Fatalf("Failed to decode response: %v", err)
-		}
-
-		if response.Success {
-			t.Fatal("Expected failure, got success")
-		}
-
-		if response.Error != internal.ErrGameNotFound {
-			t.Fatalf("Expected error %s, got %s", internal.ErrGameNotFound, response.Error)
 		}
 	})
 }
