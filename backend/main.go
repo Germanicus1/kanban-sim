@@ -52,6 +52,7 @@ func main() {
 		os.Exit(0)
 	}()
 
+	routers.InitRoutes()
 	routers.InitGameRoutes()
 	routers.InitCardRoutes()
 	routers.InitPlayerRoutes()
