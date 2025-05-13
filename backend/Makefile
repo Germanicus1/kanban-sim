@@ -1,10 +1,10 @@
 # === Load .env ===
-include .env
+include ./internal/database/.env
 export
 
 # === Config ===
 DB_URL := postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(DB_PORT)/$(POSTGRES_DB)?sslmode=disable
-MIGRATIONS_DIR := ./migrations
+MIGRATIONS_DIR := ./internal/database/migrations
 
 # === Colors ===
 RESET := \033[0m
@@ -59,7 +59,7 @@ db-start:
 	docker compose up -d
 
 	@echo "$(BLUE)Waiting for database to be ready...$(RESET)"
-	./wait-for-it.sh localhost $(DB_PORT) -- $(MAKE) db-up
+	./scripts/wait-for-it.sh localhost $(DB_PORT) -- $(MAKE) db-up
 
 db-stop:
 	@echo "$(YELLOW)Stopping Docker containers...$(RESET)"

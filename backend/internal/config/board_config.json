@@ -1,0 +1,309 @@
+{
+	"effortTypes": [
+		{ "title": "Analysis" },
+		{ "title": "Development" },
+		{ "title": "Testing" }
+	],
+
+	"columns": [
+		{ "title": "Options", "orderIndex": 0 },
+		{ "title": "Selected", "orderIndex": 1, "wipLimit": 5 },
+		{
+			"title": "Analysis",
+			"orderIndex": 2,
+			"wipLimit": 3,
+			"subcolumns": [
+				{ "title": "In Progress", "orderIndex": 0 },
+				{ "title": "Done", "orderIndex": 1 }
+			]
+		},
+		{
+			"title": "Development",
+			"orderIndex": 3,
+			"wipLimit": 3,
+			"subcolumns": [
+				{ "title": "In Progress", "orderIndex": 0 },
+				{ "title": "Done", "orderIndex": 1 }
+			]
+		},
+		{ "title": "Test", "orderIndex": 4, "wipLimit": 3 },
+		{ "title": "Ready to Deploy", "orderIndex": 5 },
+		{ "title": "Deployed", "orderIndex": 6 }
+	],
+
+	"cards": [
+		{
+			"title": "S1",
+			"classOfService": "S",
+			"columnTitle": "Ready to Deploy",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 4 },
+				{ "effortType": "Development", "estimate": 7 },
+				{ "effortType": "Testing", "estimate": 3 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S2",
+			"classOfService": "S",
+			"columnTitle": "Test",
+			"valueEstimate": "high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 3 },
+				{ "effortType": "Development", "estimate": 5 },
+				{ "effortType": "Testing", "estimate": 8 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S3",
+			"classOfService": "S",
+			"columnTitle": "Development - Done",
+			"valueEstimate": "low",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 2 },
+				{ "effortType": "Development", "estimate": 6 },
+				{ "effortType": "Testing", "estimate": 4 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S4",
+			"classOfService": "S",
+			"columnTitle": "Development - Done",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 6 },
+				{ "effortType": "Development", "estimate": 4 },
+				{ "effortType": "Testing", "estimate": 7 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S5",
+			"classOfService": "S",
+			"columnTitle": "Development - Done",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 5 },
+				{ "effortType": "Development", "estimate": 5 },
+				{ "effortType": "Testing", "estimate": 5 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S6",
+			"classOfService": "S",
+			"columnTitle": "Development - In Progress",
+			"valueEstimate": "very high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 7 },
+				{ "effortType": "Development", "estimate": 3 },
+				{ "effortType": "Testing", "estimate": 6 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S7",
+			"classOfService": "S",
+			"columnTitle": "Analysis - Done",
+			"valueEstimate": "high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 6 },
+				{ "effortType": "Development", "estimate": 5 },
+				{ "effortType": "Testing", "estimate": 2 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S8",
+			"classOfService": "S",
+			"columnTitle": "Analysis - In Progress",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 4 },
+				{ "effortType": "Development", "estimate": 4 },
+				{ "effortType": "Testing", "estimate": 4 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S9",
+			"classOfService": "S",
+			"columnTitle": "Selected",
+			"valueEstimate": "low",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 3 },
+				{ "effortType": "Development", "estimate": 6 },
+				{ "effortType": "Testing", "estimate": 3 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S10",
+			"classOfService": "S",
+			"columnTitle": "Selected",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 2 },
+				{ "effortType": "Development", "estimate": 7 },
+				{ "effortType": "Testing", "estimate": 5 }
+			],
+			"selectedDay": 1,
+			"deployedDay": null
+		},
+		{
+			"title": "S11",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "low",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 1 },
+				{ "effortType": "Development", "estimate": 2 },
+				{ "effortType": "Testing", "estimate": 3 }
+			]
+		},
+		{
+			"title": "S12",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 2 },
+				{ "effortType": "Development", "estimate": 4 },
+				{ "effortType": "Testing", "estimate": 5 }
+			]
+		},
+		{
+			"title": "S13",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 3 },
+				{ "effortType": "Development", "estimate": 6 },
+				{ "effortType": "Testing", "estimate": 1 }
+			]
+		},
+		{
+			"title": "S14",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 5 },
+				{ "effortType": "Development", "estimate": 1 },
+				{ "effortType": "Testing", "estimate": 2 }
+			]
+		},
+		{
+			"title": "S15",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "very high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 4 },
+				{ "effortType": "Development", "estimate": 4 },
+				{ "effortType": "Testing", "estimate": 4 }
+			]
+		},
+		{
+			"title": "S16",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "low",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 3 },
+				{ "effortType": "Development", "estimate": 2 },
+				{ "effortType": "Testing", "estimate": 2 }
+			]
+		},
+		{
+			"title": "S17",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 6 },
+				{ "effortType": "Development", "estimate": 2 },
+				{ "effortType": "Testing", "estimate": 3 }
+			]
+		},
+		{
+			"title": "S18",
+			"classOfService": "S",
+			"columnTitle": "Options",
+			"valueEstimate": "high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 2 },
+				{ "effortType": "Development", "estimate": 3 },
+				{ "effortType": "Testing", "estimate": 1 }
+			]
+		},
+		{
+			"title": "I1",
+			"classOfService": "I",
+			"columnTitle": "Options",
+			"valueEstimate": "low",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 2 },
+				{ "effortType": "Development", "estimate": 2 },
+				{ "effortType": "Testing", "estimate": 2 }
+			]
+		},
+		{
+			"title": "I2",
+			"classOfService": "I",
+			"columnTitle": "Options",
+			"valueEstimate": "medium",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 1 },
+				{ "effortType": "Development", "estimate": 3 },
+				{ "effortType": "Testing", "estimate": 2 }
+			]
+		},
+		{
+			"title": "I3",
+			"classOfService": "I",
+			"columnTitle": "Options",
+			"valueEstimate": "low",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 3 },
+				{ "effortType": "Development", "estimate": 1 },
+				{ "effortType": "Testing", "estimate": 1 }
+			]
+		},
+		{
+			"title": "F1",
+			"classOfService": "F",
+			"columnTitle": "Options",
+			"valueEstimate": "very high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 5 },
+				{ "effortType": "Development", "estimate": 5 },
+				{ "effortType": "Testing", "estimate": 5 }
+			]
+		},
+		{
+			"title": "F2",
+			"classOfService": "F",
+			"columnTitle": "Options",
+			"valueEstimate": "high",
+			"efforts": [
+				{ "effortType": "Analysis", "estimate": 4 },
+				{ "effortType": "Development", "estimate": 6 },
+				{ "effortType": "Testing", "estimate": 4 }
+			]
+		}
+	]
+}
