@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   db:
-    env_file: ./backend/internal/database/.env
+    env_file: ./backend/.env
     image: postgres
     restart: always
     environment:
@@ -13,7 +13,7 @@ services:
       - '${DB_PORT}:5432'
 
   adminer:
-    env_file: ./backend/internal/database/.env
+    env_file: ./backend/.env
     image: adminer
     restart: always
     environment:

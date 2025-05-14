@@ -5,23 +5,23 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Germanicus1/kanban-sim/internal"
+	"github.com/Germanicus1/kanban-sim/internal/database"
 	"github.com/joho/godotenv"
 )
 
 var db *sql.DB
 
 func setupEnv(t *testing.T) {
-	envPath := filepath.Join("..", ".env")
+	envPath := filepath.Join("..", "..", ".env")
 	if err := godotenv.Load(envPath); err != nil {
 		t.Fatalf("Error loading .env file: %v", err)
 	}
 }
 
-func setupDB(t *testing.T, tableName string) {
+func SetupDB(t *testing.T, tableName string) {
 	setupEnv(t)
 	var err error
-	db, err = internal.InitDB()
+	db, err = database.InitDB()
 	if err != nil {
 		t.Fatalf("Failed to initialize DB: %v", err)
 	}
@@ -37,7 +37,7 @@ func setupDB(t *testing.T, tableName string) {
 	}
 }
 
-func tearDownDB() {
+func TearDownDB() {
 	if db != nil {
 		db.Close()
 	}

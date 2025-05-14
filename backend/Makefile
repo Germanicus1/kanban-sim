@@ -1,5 +1,5 @@
-# === Load .env ===
-include ./internal/database/.env
+# Load .env variables into Make
+-include ./.env
 export
 
 # === Config ===
@@ -8,10 +8,10 @@ MIGRATIONS_DIR := ./internal/database/migrations
 
 # === Colors ===
 RESET := \033[0m
-RED := \033[0;31m
+RED   := \033[0;31m
 GREEN := \033[0;32m
-YELLOW := \033[0;33m
-BLUE := \033[0;34m
+YELLOW:= \033[0;33m
+BLUE  := \033[0;34m
 
 # === Commands ===
 .PHONY: help db-new db-up db-down db-status db-reset db-start db-stop db-shell
@@ -57,7 +57,6 @@ db-reset:
 db-start:
 	@echo "$(GREEN)Starting Docker containers...$(RESET)"
 	docker compose up -d
-
 	@echo "$(BLUE)Waiting for database to be ready...$(RESET)"
 	./scripts/wait-for-it.sh localhost $(DB_PORT) -- $(MAKE) db-up
 
