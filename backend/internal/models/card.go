@@ -7,10 +7,11 @@ type Card struct {
 	ID             uuid.UUID `json:"id"`
 	GameID         uuid.UUID `json:"gameId"`
 	ColumnID       uuid.UUID `json:"columnId"`
+	ColumnTitle    string    `json:"columnTitle,omitempty"`
 	Title          string    `json:"title"`
-	ClassOfService *string   `json:"classOfService,omitempty"`
-	ValueEstimate  *string   `json:"valueEstimate,omitempty"`
-	SelectedDay    *int      `json:"selectedDay,omitempty"`
-	DeployedDay    *int      `json:"deployedDay,omitempty"`
+	ClassOfService string    `json:"classOfService,omitempty"`
+	ValueEstimate  string    `json:"valueEstimate,omitempty"`
+	SelectedDay    int       `json:"selectedDay,omitempty"`
+	DeployedDay    int       `json:"deployedDay,omitempty"`
 	Efforts        []Effort  `json:"efforts"`
 }
