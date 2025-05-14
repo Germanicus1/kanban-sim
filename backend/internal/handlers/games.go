@@ -3,6 +3,8 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -51,29 +53,30 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/* 	// 3) seed effort_types
-	   	effortTypeIDs := make(map[string]uuid.UUID, len(cfg.EffortTypes))
-	   	for idx, et := range cfg.EffortTypes {
-	   		etID := uuid.New()
-	   		if _, err := tx.Exec(
-	   			`INSERT INTO effort_types (id, game_id, title, order_index)
-	   	         VALUES ($1,$2,$3,$4)`,
-	   			etID, gameID, et.Title, idx,
-	   		); err != nil {
-	   			response.RespondWithError(w, http.StatusInternalServerError,
-	   				"failed to insert effort type: "+err.Error())
-	   			return
-	   		}
-	   		effortTypeIDs[et.Title] = etID
-	   	} */
+	// REF  Seeding effort_types, columns, cards, and efforts
+	// 3) seed effort_types
+	effortTypeIDs := make(map[string]uuid.UUID, len(cfg.EffortTypes))
+	for idx, et := range cfg.EffortTypes {
+		etID := uuid.New()
+		if _, err := tx.Exec(
+			`INSERT INTO effort_types (id, game_id, title, order_index)
+			VALUES ($1,$2,$3,$4)`,
+			etID, gameID, et.Title, idx,
+		); err != nil {
+			response.RespondWithError(w, http.StatusInternalServerError,
+				"failed to insert effort type: "+err.Error())
+			return
+		}
+		effortTypeIDs[et.Title] = etID
+	}
 
-	/* // 4) seed columns & subcolumns
+	// 4) seed columns & subcolumns
 	columnIDs := make(map[string]uuid.UUID, len(cfg.Columns)*2)
 	for _, col := range cfg.Columns {
 		mainID := uuid.New()
 		if _, err := tx.Exec(
 			`INSERT INTO columns (id, game_id, title, parent_id, order_index)
-	         VALUES ($1,$2,$3,NULL,$4)`,
+		         VALUES ($1,$2,$3,NULL,$4)`,
 			mainID, gameID, col.Title, col.OrderIndex,
 		); err != nil {
 			response.RespondWithError(w, http.StatusInternalServerError, "failed to insert column: "+err.Error())
@@ -85,7 +88,7 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 			subID := uuid.New()
 			if _, err := tx.Exec(
 				`INSERT INTO columns (id, game_id, title, parent_id, order_index)
-	             VALUES ($1,$2,$3,$4,$5)`,
+					VALUES ($1,$2,$3,$4,$5)`,
 				subID, gameID, sub.Title, mainID, sub.OrderIndex,
 			); err != nil {
 				msg := fmt.Sprintf("failed to insert subcolumn %q under %q: %v", sub.Title, col.Title, err)
@@ -96,47 +99,47 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 			columnIDs[col.Title+" - "+sub.Title] = subID
 		}
 	}
+
+	/*
+		// 5) seed cards & their efforts
+		for _, c := range cfg.Cards {
+			cardID := uuid.New()
+			colID, ok := columnIDs[c.ColumnID.URN()]
+			if !ok {
+				response.RespondWithError(w, http.StatusInternalServerError, "unknown column "+colID.String())
+				return
+			}
+			_ = cardID
+			_ = colID
+			if _, err := tx.Exec(
+				`INSERT INTO cards
+					(id, game_id, column_id, title, class_of_service, value_estimate, selected_day, deployed_day)
+					VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
+				cardID, gameID, colID,
+				c.Title, c.ClassOfService, c.ValueEstimate,
+				c.SelectedDay, c.DeployedDay,
+			); err != nil {
+				response.RespondWithError(w, http.StatusInternalServerError, "failed to insert card: "+err.Error())
+				return
+			}
+
+			for _, e := range c.Efforts {
+				etID, ok := effortTypeIDs[e.EffortType]
+				if !ok {
+					response.RespondWithError(w, http.StatusInternalServerError, "unknown effort type "+e.EffortType)
+					return
+				}
+				if _, err := tx.Exec(
+					`INSERT INTO efforts (id, card_id, effort_type_id, estimate, remaining, actual)
+						VALUES($1,$2,$3,$4,$4,0)`,
+					uuid.New(), cardID, etID, e.Estimate,
+				); err != nil {
+					response.RespondWithError(w, http.StatusInternalServerError, "failed to insert effort: "+err.Error())
+					return
+				}
+			}
+		}
 	*/
-
-	// REF  how seeding works
-	/* 	// 5) seed cards & their efforts
-	   	for _, c := range cfg.Cards {
-	   		cardID := uuid.New()
-	   		colID, ok := columnIDs[c.ColumnID.URN()]
-	   		if !ok {
-	   			response.RespondWithError(w, http.StatusInternalServerError, "unknown column "+colID.String())
-	   			return
-	   		}
-	   		_ = cardID
-	   		_ = colID
-	   		if _, err := tx.Exec(
-	   			`INSERT INTO cards
-	   		       (id, game_id, column_id, title, class_of_service, value_estimate, selected_day, deployed_day)
-	   		     VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
-	   			cardID, gameID, colID,
-	   			c.Title, c.ClassOfService, c.ValueEstimate,
-	   			c.SelectedDay, c.DeployedDay,
-	   		); err != nil {
-	   			response.RespondWithError(w, http.StatusInternalServerError, "failed to insert card: "+err.Error())
-	   			return
-	   		}
-
-	   		for _, e := range c.Efforts {
-	   			etID, ok := effortTypeIDs[e.EffortType]
-	   			if !ok {
-	   				response.RespondWithError(w, http.StatusInternalServerError, "unknown effort type "+e.EffortType)
-	   				return
-	   			}
-	   			if _, err := tx.Exec(
-	   				`INSERT INTO efforts (id, card_id, effort_type_id, estimate, remaining, actual)
-	   		         VALUES($1,$2,$3,$4,$4,0)`,
-	   				uuid.New(), cardID, etID, e.Estimate,
-	   			); err != nil {
-	   				response.RespondWithError(w, http.StatusInternalServerError, "failed to insert effort: "+err.Error())
-	   				return
-	   			}
-	   		}
-	   	} */
 
 	// 6) commit
 	if err := tx.Commit(); err != nil {

@@ -94,10 +94,10 @@ func TestGameCRUD(t *testing.T) {
 			t.Errorf("games: expected 1, got %d", got)
 		}
 
-		// // 2) effort_types
-		// if got := mustCount(t, `SELECT COUNT(*) FROM effort_types WHERE game_id=$1`, gameID); got != len(cfg.EffortTypes) {
-		// 	t.Errorf("effort_types: expected %d, got %d", len(cfg.EffortTypes), got)
-		// }
+		// 2) effort_types
+		if got := mustCount(t, `SELECT COUNT(*) FROM effort_types WHERE game_id=$1`, gameID); got != len(cfg.EffortTypes) {
+			t.Errorf("effort_types: expected %d, got %d", len(cfg.EffortTypes), got)
+		}
 
 		/* 		// 3) columns + subcolumns
 		   		totalCols := 0
@@ -127,27 +127,59 @@ func TestGameCRUD(t *testing.T) {
 
 	// --- Verify Columns ---
 	t.Run("Verify Columns", func(t *testing.T) {
-		t.Skip("columns seeding not implemented yet")
-		rows, err := database.DB.Query(`SELECT title, column_order FROM cards WHERE game_id = $1 ORDER BY column_order`, gameID)
+		rows, err := database.DB.Query(`
+        SELECT CASE
+            WHEN c.parent_id IS NULL THEN c.title
+            ELSE p.title || ' - ' || c.title
+        END AS full_title
+        FROM columns c
+        LEFT JOIN columns p ON p.id = c.parent_id
+        WHERE c.game_id = $1
+        ORDER BY
+            COALESCE(p.order_index, c.order_index),  -- parent position
+            c.order_index                            -- subposition
+    `, gameID)
 		if err != nil {
 			t.Fatalf("Failed to query columns: %v", err)
 		}
 		defer rows.Close()
 
-		expectedColumns := []string{"Options", "Selected", "Analysis - In Progress", "Analysis - Done", "Development - In Progress", "Development - Done", "Test", "Ready to Deploy", "Deployed"}
+		expected := []string{
+			"Options",
+			"Selected",
+			"Analysis - In Progress",
+			"Analysis - Done",
+			"Analysis",
+			"Development - In Progress",
+			"Development - Done",
+			"Development",
+			"Test",
+			"Ready to Deploy",
+			"Deployed",
+		}
 
-		index := 0
+		var got []string
 		for rows.Next() {
 			var title string
-			var order int
-			if err := rows.Scan(&title, &order); err != nil {
-				t.Fatalf("Failed to scan column: %v", err)
+			if err := rows.Scan(&title); err != nil {
+				t.Fatalf("Scan failed: %v", err)
 			}
+			got = append(got, title)
+		}
+		if err := rows.Err(); err != nil {
+			t.Fatalf("Rows error: %v", err)
+		}
 
-			if title != expectedColumns[index] {
-				t.Errorf("Expected column %s at index %d, got %s", expectedColumns[index], index, title)
+		if len(got) != len(expected) {
+			t.Fatalf("wrong number of columns: got %d, want %d", len(got), len(expected))
+		}
+
+		log.Printf("Columns: %v\n", got)
+
+		for i := range expected {
+			if got[i] != expected[i] {
+				t.Errorf("column[%d]: got %q, want %q", i, got[i], expected[i])
 			}
-			index++
 		}
 	})
 
@@ -272,8 +304,6 @@ func TestGameCRUD(t *testing.T) {
 
 	// --- Update Game ---
 	t.Run("Update Game", func(t *testing.T) {
-		// t.Skip("Update Game not implemented yet")
-
 		updateData := map[string]int{"day": 5}
 		body, _ := json.Marshal(updateData)
 
@@ -292,8 +322,6 @@ func TestGameCRUD(t *testing.T) {
 
 	// --- Delete Game ---
 	t.Run("Delete Game", func(t *testing.T) {
-		t.Skip("Delete Game not implemented yet")
-
 		req := httptest.NewRequest(http.MethodDelete, "/games/delete?id="+gameID.String(), nil)
 		w := httptest.NewRecorder()
 

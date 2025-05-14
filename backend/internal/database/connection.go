@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -14,7 +13,6 @@ var DB *sql.DB
 
 // InitDB initializes and returns a new DB connection
 func InitDB() (*sql.DB, error) {
-	log.Println("Initializing database connection...")
 	connStr := fmt.Sprintf(
 		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
 		os.Getenv("POSTGRES_USER"),
