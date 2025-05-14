@@ -4,39 +4,20 @@ import (
 	"context"
 
 	"github.com/Germanicus1/kanban-sim/internal/models"
+	"github.com/google/uuid"
 )
 
-// GameService defines business-logic operations for games
-type GameService interface {
-	CreateGame(ctx context.Context, input CreateGameInput) (*models.Game, error)
-	GetGame(ctx context.Context, id int64) (*models.Game, error)
-	UpdateGame(ctx context.Context, id int64, input UpdateGameInput) (*models.Game, error)
-	DeleteGame(ctx context.Context, id int64) error
-	GetEvents(ctx context.Context, id int64) ([]Event, error)
-	GetBoard(ctx context.Context, id int64) (*Board, error)
+// Service holds your business-logic methods.
+type Service struct {
+	repo Repository
 }
 
-// gameService is the default implementation of GameService
-type gameService struct {
-	repo GameRepository
+// NewService constructs a Service.
+func NewService(repo Repository) *Service {
+	return &Service{repo: repo}
 }
 
-// NewGameService constructs a new GameService
-func NewGameService(repo GameRepository) GameService {
-	return &gameService{repo: repo}
+// CreateGame calls into your repo to persist a new game and seed all data.
+func (s *Service) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.UUID, error) {
+	return s.repo.CreateGame(ctx, cfg)
 }
-
-func (s *gameService) CreateGame(ctx context.Context, input CreateGameInput) (*models.Game, error) {
-	g := &models.Game{
-		Name:      input.Name,
-		CreatedAt: input.CreatedAt,
-		// map additional fields
-	}
-	if err := s.repo.Create(ctx, g); err != nil {
-		return nil, err
-	}
-	// any additional business logic (e.g., seeding effort types)
-	return g, nil
-}
-
-// ...implement the rest of the service methods similarly

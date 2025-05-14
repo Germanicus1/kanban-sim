@@ -9,7 +9,9 @@ import (
 	"syscall"
 
 	"github.com/Germanicus1/kanban-sim/internal/database"
-	"github.com/Germanicus1/kanban-sim/internal/routers"
+	"github.com/Germanicus1/kanban-sim/internal/games"
+	"github.com/Germanicus1/kanban-sim/internal/handlers"
+
 	"github.com/joho/godotenv"
 )
 
@@ -63,8 +65,14 @@ func main() {
 		os.Exit(0)
 	}()
 
-	routers.InitRoutes()
-	routers.InitGameRoutes()
+	repo := games.NewSQLRepo(db)       // your sql_repo.go
+	svc := games.NewService(repo)      // service.go
+	gh := handlers.NewGameHandler(svc) // game_handler.go
+
+	http.HandleFunc("/games", gh.CreateGame)
+
+	// routers.InitRoutes()
+	// routers.InitGameRoutes()
 	// routers.InitCardRoutes()
 	// routers.InitPlayerRoutes()
 
