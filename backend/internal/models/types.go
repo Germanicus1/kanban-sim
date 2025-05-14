@@ -1,8 +1,9 @@
 package models
 
 type BoardConfig struct {
-	Columns      []BoardColumn `json:"columns"`
-	InitialCards []Card        `json:"initialCards"`
+	EffortTypes []EffortType `json:"effortTypes"`
+	Columns     []Column     `json:"columns"`
+	Cards       []Card       `json:"cards"`
 }
 
 type BoardColumn struct {

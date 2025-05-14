@@ -2,17 +2,16 @@ package handlers_test
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/Germanicus1/kanban-sim/internal/config"
 	"github.com/Germanicus1/kanban-sim/internal/database"
 	"github.com/Germanicus1/kanban-sim/internal/handlers"
-	"github.com/Germanicus1/kanban-sim/internal/models"
 	"github.com/Germanicus1/kanban-sim/internal/response"
 	"github.com/google/uuid"
 )
@@ -31,25 +30,17 @@ func mustCount(t *testing.T, query string, args ...interface{}) int {
 	return n
 }
 
-func loadConfig(t *testing.T) *models.Board {
-	t.Helper()
-	path := filepath.Join("..", "config", "board_config.json")
-	f, err := os.Open(path)
-	if err != nil {
-		t.Fatalf("cannot open config: %v", err)
-	}
-	defer f.Close()
-
-	var cfg models.Board
-	if err := json.NewDecoder(f).Decode(&cfg); err != nil {
-		t.Fatalf("cannot decode config: %v", err)
-	}
-	return &cfg
-}
 func TestGameCRUD(t *testing.T) {
 	SetupDB(t, "games")
 	SetupDB(t, "cards")
+	SetupDB(t, "efforts")
+	SetupDB(t, "columns")
 	defer TearDownDB()
+
+	cfg, err := config.LoadBoardConfig()
+	if err != nil {
+		t.Fatalf("failed to load board config: %v", err)
+	}
 
 	var gameID uuid.UUID
 
@@ -82,47 +73,11 @@ func TestGameCRUD(t *testing.T) {
 		gameID = resp.Data.ID
 	})
 
-	t.Run("Verify Seeding", func(t *testing.T) {
-		cfg := loadConfig(t)
-		log.Printf("Efforts: %v\n", len(cfg.EffortTypes))
-		log.Println(gameID)
-
-		_ = cfg // just to silence the compiler since we are not using cfg yet.
-
-		// 1) games
-		if got := mustCount(t, `SELECT COUNT(*) FROM games WHERE id=$1`, gameID); got != 1 {
-			t.Errorf("games: expected 1, got %d", got)
-		}
-
+	t.Run("Verify Efforts", func(t *testing.T) {
 		// 2) effort_types
 		if got := mustCount(t, `SELECT COUNT(*) FROM effort_types WHERE game_id=$1`, gameID); got != len(cfg.EffortTypes) {
 			t.Errorf("effort_types: expected %d, got %d", len(cfg.EffortTypes), got)
 		}
-
-		/* 		// 3) columns + subcolumns
-		   		totalCols := 0
-		   		for _, c := range cfg.Columns {
-		   			totalCols++
-		   			totalCols += len(c.SubColumns)
-		   		}
-		   		if got := mustCount(t, `SELECT COUNT(*) FROM columns WHERE game_id=$1`, gameID); got != totalCols {
-		   			t.Errorf("columns: expected %d, got %d", totalCols, got)
-		   		}
-		   		// 4) cards
-		   		if got := mustCount(t, `SELECT COUNT(*) FROM cards WHERE game_id=$1`, gameID); got != len(cfg.Cards) {
-		   			t.Errorf("cards: expected %d, got %d", len(cfg.Cards), got)
-		   		}
-		   		// 5) efforts
-		   		sumEff := 0
-		   		for _, c := range cfg.Cards {
-		   			sumEff += len(c.Efforts)
-		   		}
-		   		if got := mustCount(t, `
-		   		    SELECT COUNT(*) FROM efforts
-		   		     WHERE card_id IN (SELECT id FROM cards WHERE game_id=$1)
-		   		`, gameID); got != sumEff {
-		   			t.Errorf("efforts: expected %d, got %d", sumEff, got)
-		   		} */
 	})
 
 	// --- Verify Columns ---
@@ -184,9 +139,9 @@ func TestGameCRUD(t *testing.T) {
 	})
 
 	// --- Verify Cards ---
-	t.Run("Verify Cards", func(t *testing.T) {
-		t.Skip("cards seeding not implemented yet")
-		rows, err := database.DB.Query(`SELECT id, card_column FROM cards WHERE game_id = $1`, gameID)
+	t.Run("Verify Cards Count", func(t *testing.T) {
+		// t.Skip("skipping card verification")
+		rows, err := database.DB.Query(`SELECT id, column_id FROM cards WHERE game_id = $1`, gameID)
 		if err != nil {
 			t.Fatalf("Failed to query cards: %v", err)
 		}
@@ -201,6 +156,98 @@ func TestGameCRUD(t *testing.T) {
 			t.Error("Expected cards to be inserted, found none")
 		}
 	})
+
+	for _, want := range cfg.Cards {
+		t.Run("Verify Cards "+want.Title, func(t *testing.T) {
+			// fetch the card
+			row := database.DB.QueryRow(`
+                SELECT id, column_id, class_of_service, value_estimate, selected_day, deployed_day
+                  FROM cards
+                 WHERE game_id=$1 AND title=$2
+            `, gameID, want.Title)
+
+			var (
+				cardID uuid.UUID
+				colID  uuid.UUID
+				cls    sql.NullString
+				val    sql.NullString
+				sel    sql.NullInt64
+				dep    sql.NullInt64
+			)
+			if err := row.Scan(&cardID, &colID, &cls, &val, &sel, &dep); err != nil {
+				t.Fatalf("card %q not found or scan failed: %v", want.Title, err)
+			}
+
+			// assert class_of_service
+			if want.ClassOfService != nil {
+				if !cls.Valid || cls.String != *want.ClassOfService {
+					t.Errorf("classOfService: got %v; want %v", cls.String, *want.ClassOfService)
+				}
+			} else if cls.Valid {
+				t.Errorf("classOfService unexpectedly %q", cls.String)
+			}
+
+			// assert value_estimate
+			if want.ValueEstimate != nil {
+				if !val.Valid || val.String != *want.ValueEstimate {
+					t.Errorf("valueEstimate: got %v; want %v", val.String, *want.ValueEstimate)
+				}
+			} else if val.Valid {
+				t.Errorf("valueEstimate unexpectedly %q", val.String)
+			}
+
+			// assert selected_day
+			if want.SelectedDay != nil {
+				if !sel.Valid || int(sel.Int64) != *want.SelectedDay {
+					t.Errorf("selectedDay: got %v; want %v", sel.Int64, *want.SelectedDay)
+				}
+			}
+
+			// assert deployed_day
+			if want.DeployedDay != nil {
+				if !dep.Valid || int(dep.Int64) != *want.DeployedDay {
+					t.Errorf("deployedDay: got %v; want %v", dep.Int64, *want.DeployedDay)
+				}
+			}
+
+			// now check efforts
+			rows, err := database.DB.Query(`
+                SELECT et.title, e.estimate
+                  FROM efforts e
+                  JOIN effort_types et ON e.effort_type_id=et.id
+                 WHERE e.card_id=$1
+              ORDER BY et.order_index
+            `, cardID)
+			if err != nil {
+				t.Fatalf("query efforts failed: %v", err)
+			}
+			defer rows.Close()
+
+			i := 0
+			for rows.Next() {
+				var gotType string
+				var gotEst int
+				if err := rows.Scan(&gotType, &gotEst); err != nil {
+					t.Fatalf("scan effort: %v", err)
+				}
+				if i >= len(want.Efforts) {
+					t.Fatalf("extra effort %q/%d", gotType, gotEst)
+				}
+				wantEff := want.Efforts[i]
+				if gotType != wantEff.EffortType || gotEst != wantEff.Estimate {
+					t.Errorf("effort[%d]: got (%q,%d); want (%q,%d)",
+						i, gotType, gotEst, wantEff.EffortType, wantEff.Estimate)
+				}
+				i++
+			}
+			if err := rows.Err(); err != nil {
+				t.Fatalf("rows err: %v", err)
+			}
+			if i != len(want.Efforts) {
+				t.Errorf("expected %d efforts, got %d", len(want.Efforts), i)
+			}
+		})
+	}
 
 	// --- Get Game ---
 	t.Run("Get Game", func(t *testing.T) {
