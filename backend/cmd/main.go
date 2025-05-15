@@ -69,13 +69,15 @@ func main() {
 	svc := games.NewService(repo)      // service.go
 	gh := handlers.NewGameHandler(svc) // game_handler.go
 
-	http.HandleFunc("/games", gh.CreateGame)
+	mux := http.NewServeMux()
 
+	mux.HandleFunc("POST /games", gh.CreateGame)
+	mux.HandleFunc("GET /games/{id}/board", gh.GetBoard)
 	// routers.InitRoutes()
 	// routers.InitGameRoutes()
 	// routers.InitCardRoutes()
 	// routers.InitPlayerRoutes()
 
 	log.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }

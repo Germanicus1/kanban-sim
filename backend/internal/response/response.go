@@ -14,6 +14,7 @@ type APIResponse[T any] struct {
 
 // RespondWithError writes a JSON error response.
 func RespondWithError(w http.ResponseWriter, status int, errCode string) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(APIResponse[any]{
 		Success: false,
@@ -23,7 +24,7 @@ func RespondWithError(w http.ResponseWriter, status int, errCode string) {
 
 // RespondWithData writes a JSON success response.
 func RespondWithData(w http.ResponseWriter, data interface{}) {
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(APIResponse[any]{
 		Success: true,
 		Data:    data,

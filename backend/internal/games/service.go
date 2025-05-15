@@ -21,3 +21,13 @@ func NewService(repo Repository) *Service {
 func (s *Service) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.UUID, error) {
 	return s.repo.CreateGame(ctx, cfg)
 }
+
+// GetBoard retrieves the full board for a given game.
+func (s *Service) GetBoard(ctx context.Context, gameID uuid.UUID) (models.Board, error) {
+	return s.repo.GetBoard(ctx, gameID)
+}
+
+// GetGame retrieves a game by its ID.
+func (s *Service) GetGame(ctx context.Context, id uuid.UUID) (models.Game, error) {
+	return s.repo.GetGameByID(ctx, id)
+}

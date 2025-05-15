@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/Germanicus1/kanban-sim/internal/config"
 	"github.com/Germanicus1/kanban-sim/internal/games"
 	"github.com/Germanicus1/kanban-sim/internal/models"
 	"github.com/Germanicus1/kanban-sim/internal/response"
+	"github.com/google/uuid"
 )
 
 // GameHandler groups your game endpoints.
@@ -97,4 +99,41 @@ func safeInt(ptr *int) int {
 		return *ptr
 	}
 	return 0
+}
+
+// GetBoard handles GET /games/{id}/board
+func (h *GameHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
+	// 1) Method check (optional, since mux already matched “GET”)
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		response.RespondWithError(w, http.StatusMethodNotAllowed, "method_not_allowed")
+		return
+	}
+
+	// 2) Extract the {id} wildcard from the path
+	idStr := r.PathValue("id")
+	if idStr == "" {
+		response.RespondWithError(w, http.StatusBadRequest, "invalid_game_id")
+		return
+	}
+
+	// 3) Parse it as a UUID
+	gameID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.RespondWithError(w, http.StatusBadRequest, "invalid_game_id")
+		return
+	}
+
+	// 4) Delegate to your service
+	board, err := h.Service.GetBoard(r.Context(), gameID)
+	if err != nil {
+		log.Printf("GetBoard: failed to load board for %s: %v", gameID, err)
+		response.RespondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	response.RespondWithData(w, board)
+	// 5) Encode and return
+	// w.Header().Set("Content-Type", "application/json")
+	// w.WriteHeader(http.StatusOK)
+	// json.NewEncoder(w).Encode(board)
 }
