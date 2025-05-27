@@ -11,8 +11,10 @@ import (
 // Repository declares what data operations you need.
 type Repository interface {
 	CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.UUID, error)
-	GetBoard(ctx context.Context, gameID uuid.UUID) (models.Board, error)
+	GetBoard(ctx context.Context, id uuid.UUID) (models.Board, error)
 	GetGameByID(ctx context.Context, id uuid.UUID) (models.Game, error)
+	DeleteGame(ctx context.Context, id uuid.UUID) error
+	UpdateGame(ctx context.Context, id uuid.UUID, day int) error
 }
 
 // NewSQLRepo constructs a games.Repository backed by *sql.DB.

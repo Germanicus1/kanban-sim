@@ -13,16 +13,19 @@ import (
 )
 
 const (
-	ErrGameNotFound     = "GAME_NOT_FOUND"
-	ErrInvalidGameID    = "INVALID_GAME_ID"
-	ErrDatabaseError    = "DATABASE_ERROR"
-	ErrValidationFailed = "VALIDATION_FAILED"
-	ErrDuplicateEntry   = "DUPLICATE_ENTRY"
-	ErrInvalidInput     = "INVALID_INPUT"
-	ErrCardNotFound     = "CARD_NOT_FOUND"
-	ErrInvalidCardID    = "INVALID_CARD_ID"
-	ErrInvalidPlayerID  = "INVALID_PLAYER_ID"
-	ErrPlayerNotFound   = "PLAYER_NOT_FOUND"
+	ErrGameNotFound        = "GAME_NOT_FOUND"
+	ErrInvalidGameID       = "INVALID_GAME_ID"
+	ErrDatabaseError       = "DATABASE_ERROR"
+	ErrValidationFailed    = "VALIDATION_FAILED"
+	ErrDuplicateEntry      = "DUPLICATE_ENTRY"
+	ErrInvalidInput        = "INVALID_INPUT"
+	ErrCardNotFound        = "CARD_NOT_FOUND"
+	ErrInvalidCardID       = "INVALID_CARD_ID"
+	ErrInvalidPlayerID     = "INVALID_PLAYER_ID"
+	ErrPlayerNotFound      = "PLAYER_NOT_FOUND"
+	ErrInternalServerError = "INTERNAL_SERVER_ERROR"
+	ErrMethodNotAllowed    = "METHOD_NOT_ALLOWED"
+	ErrInvalidJSON         = "INVALID_JSON"
 )
 
 // MapPostgresError maps PostgreSQL error codes to HTTP status codes and error messages

@@ -3,11 +3,9 @@ package games
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/Germanicus1/kanban-sim/internal/models"
-	"github.com/Germanicus1/kanban-sim/internal/response"
 	"github.com/google/uuid"
 )
 
@@ -291,12 +289,35 @@ func (r *sqlRepo) GetBoard(ctx context.Context, gameID uuid.UUID) (models.Board,
 func (r *sqlRepo) GetGameByID(ctx context.Context, id uuid.UUID) (models.Game, error) {
 	const q = `SELECT id, created_at, day FROM games WHERE id = $1`
 	var g models.Game
-	row := r.db.QueryRowContext(ctx, q, id)
-	if err := row.Scan(&g.ID, &g.CreatedAt, &g.Day); err != nil {
-		if err == sql.ErrNoRows {
-			return models.Game{}, errors.New(response.ErrGameNotFound)
-		}
+
+	switch err := r.db.QueryRowContext(ctx, q, id).Scan(&g.ID, &g.CreatedAt, &g.Day); err {
+	case nil:
+		return g, nil
+	case sql.ErrNoRows:
+		return models.Game{}, ErrNotFound
+	default:
 		return models.Game{}, err
 	}
-	return g, nil
+}
+
+func (r *sqlRepo) DeleteGame(ctx context.Context, id uuid.UUID) error {
+	const q = `DELETE FROM games WHERE id = $1`
+	if _, err := r.db.ExecContext(ctx, q, id); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("delete game: %w", err)
+	}
+	return nil
+}
+
+func (r *sqlRepo) UpdateGame(ctx context.Context, id uuid.UUID, day int) error {
+	const q = `UPDATE games SET day = $1 WHERE id = $2`
+	if _, err := r.db.ExecContext(ctx, q, day, id); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("update game: %w", err)
+	}
+	return nil
 }

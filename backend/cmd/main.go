@@ -65,18 +65,28 @@ func main() {
 		os.Exit(0)
 	}()
 
-	repo := games.NewSQLRepo(db)       // your sql_repo.go
-	svc := games.NewService(repo)      // service.go
-	gh := handlers.NewGameHandler(svc) // game_handler.go
-
 	mux := http.NewServeMux()
 
+	repo := games.NewSQLRepo(db) // your sql_repo.go
+	svc := games.NewService(repo)
+	gh := handlers.NewGameHandler(svc) // game_handler.go
+	appH := handlers.NewAppHandler()
+
+	mux.HandleFunc("GET /", appH.Home)
+	mux.HandleFunc("GET /ping", appH.Ping)
 	mux.HandleFunc("POST /games", gh.CreateGame)
+	mux.HandleFunc("GET /games/{id}", gh.GetGame)
 	mux.HandleFunc("GET /games/{id}/board", gh.GetBoard)
-	// routers.InitRoutes()
-	// routers.InitGameRoutes()
-	// routers.InitCardRoutes()
-	// routers.InitPlayerRoutes()
+	mux.HandleFunc("DELETE /games/{id}", gh.DeleteGame)
+	mux.HandleFunc("PATCH /games/{id}", gh.UpdateGame)
+
+	// API documentation
+	mux.HandleFunc("GET /openapi.yaml", appH.OpenAPI)
+	mux.HandleFunc("GET /docs", appH.DocsRedirect)
+	mux.Handle(
+		"GET /docs/",
+		http.StripPrefix("/docs/", http.FileServer(http.Dir("./docs"))),
+	)
 
 	log.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))

@@ -4,6 +4,8 @@ A real-time multiplayer simulation of the getKanban board game, built with Go, P
 
 This project is under active development and not yet released.
 
+⚠️ THEREE IS NO FRONTEND YET
+
 ---
 
 ## Current Features & Progress

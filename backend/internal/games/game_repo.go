@@ -2,10 +2,13 @@ package games
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Germanicus1/kanban-sim/internal/models"
 	"github.com/google/uuid"
 )
+
+var ErrNotFound = errors.New("not found")
 
 // GameRepository defines data-access methods for games
 type GameRepository interface {
