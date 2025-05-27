@@ -85,7 +85,13 @@ This project is under active development and currently focuses on backend functi
 - Service layer (games.NewService)
 - Handler layer (handlers.NewGameHandler, handlers.NewAppHandler)
 
-The server runs on port 8080 and follows REST conventions for the game management API.
+The server runs on port 8080 and follows REST conventions for the game
+management API.
+
+### Current test coverage
+
+games: 29.6%
+handlers: 30.7%
 
 ## Todo & Upcoming Features
 
