@@ -14,7 +14,7 @@ YELLOW:= \033[0;33m
 BLUE  := \033[0;34m
 
 # === Commands ===
-.PHONY: help db-new db-up db-down db-status db-reset db-start db-stop db-shell
+.PHONY: help db-new db-up db-down db-status db-reset db-start db-stop db-shell coverage
 
 help:
 	@echo ""
@@ -27,6 +27,7 @@ help:
 	@echo "  $(BLUE)make db-start$(RESET)                  # Start Docker containers"
 	@echo "  $(BLUE)make db-stop$(RESET)                   # Stop Docker containers"
 	@echo "  $(BLUE)make db-shell$(RESET)                  # Open psql shell"
+	@echo "  $(BLUE)make coverage$(RESET)                  # ./games & ./handlers, only shows %"
 	@echo ""
 
 db-new:
@@ -67,3 +68,7 @@ db-stop:
 db-shell:
 	@echo "$(BLUE)Opening psql shell...$(RESET)"
 	docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+
+coverage:
+	@go test ./internal/games ./internal/handlers -cover \
+		| awk '/coverage:/ {n=split($$2,a,"/"); print a[n] ": " $$5}'
