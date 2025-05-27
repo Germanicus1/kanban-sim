@@ -47,7 +47,7 @@ This project is under active development and currently focuses on backend functi
 1. Clone the repository:
 
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/Germanicus1/kanban-sim
    cd backend
    ```
 
@@ -77,12 +77,21 @@ This project is under active development and currently focuses on backend functi
 
 ---
 
+## Architecture Pattern:
+
+**Uses a clean architecture with**:
+
+- Repository layer (games.NewSQLRepo)
+- Service layer (games.NewService)
+- Handler layer (handlers.NewGameHandler, handlers.NewAppHandler)
+
+The server runs on port 8080 and follows REST conventions for the game management API.
+
 ## Todo & Upcoming Features
 
 - Implement frontend using ASTRO framework.
 - Add real-time multiplayer support via WebSockets.
 - Enhance API documentation with OpenAPI specs.
-- Add unit and integration tests for backend functionality.
 
 ---
 
