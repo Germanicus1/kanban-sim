@@ -17,7 +17,7 @@ type ServiceInterface interface {
 	UpdateGame(ctx context.Context, id uuid.UUID, day int) error
 }
 
-// Service holds your business-logic methods.
+// Service holds the business-logic methods.
 type Service struct {
 	repo Repository
 }
