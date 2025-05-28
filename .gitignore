@@ -21,9 +21,12 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
+
+#Directories and other files that should be ignored
 supabase/
 docs/
 main
+_scrap/
 
 # Go workspace file
 go.work
