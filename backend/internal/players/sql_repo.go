@@ -29,7 +29,7 @@ func (r *sqlRepo) CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUI
 	var playerID uuid.UUID
 	if err := tx.QueryRowContext(ctx,
 		`INSERT INTO players (name, game_id, created_at)
-			 VALUES ($1, $2, NOW())
+			 VALUES ($1, $2)
 		 RETURNING id`,
 		cfg.Name, cfg.GameID,
 	).Scan(&playerID); err != nil {
@@ -45,8 +45,6 @@ func (r *sqlRepo) CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUI
 
 	return playerID, nil
 }
-
-//TODO implement the rest of the methods for sqlRepo
 
 func (r *sqlRepo) GetPlayerByID(ctx context.Context, id uuid.UUID) (*models.Player, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -89,8 +87,6 @@ func (r *sqlRepo) GetPlayerByID(ctx context.Context, id uuid.UUID) (*models.Play
 	// If we reach here, it means the player was successfully retrieved
 	return &player, nil
 }
-
-// internal/players/repository.go
 
 var ErrNotFound = errors.New("player not found")
 
