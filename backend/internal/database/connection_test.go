@@ -10,7 +10,7 @@ import (
 
 func setupEnv(t *testing.T) {
 	// Construct the path to the .env file one level up
-	envPath := filepath.Join("..", ".env")
+	envPath := filepath.Join("..", "..", ".env")
 
 	// Load environment variables from .env
 	if err := godotenv.Load(envPath); err != nil {
@@ -53,7 +53,7 @@ func TestMigrate(t *testing.T) {
 	}()
 
 	// Define migration directory
-	migrationDir := "../migrations"
+	migrationDir := "./migrations"
 
 	// Run migrations
 	err = Migrate(db, migrationDir)
