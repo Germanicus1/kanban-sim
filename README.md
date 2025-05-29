@@ -90,8 +90,11 @@ management API.
 
 ### Current test coverage
 
-games: 29.6%
-handlers: 30.7%
+config: 71.4%
+database: 76.9%
+games: 52.8%
+handlers: 31.3%
+players: 71.7%
 
 ## Todo & Upcoming Features
 

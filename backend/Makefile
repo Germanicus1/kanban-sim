@@ -70,5 +70,5 @@ db-shell:
 	docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 coverage:
-	@go test ./internal/games ./internal/handlers -cover \
+	@go test ./internal/... -cover \
 		| awk '/coverage:/ {n=split($$2,a,"/"); print a[n] ": " $$5}'
