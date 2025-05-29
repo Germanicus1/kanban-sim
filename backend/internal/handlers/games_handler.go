@@ -68,10 +68,10 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 			gameCfg.Cards[i] = models.Card{
 				ColumnTitle:    cc.ColumnTitle,
 				Title:          cc.Title,
-				ClassOfService: safeString(cc.ClassOfService),
-				ValueEstimate:  safeString(cc.ValueEstimate),
-				SelectedDay:    safeInt(cc.SelectedDay),
-				DeployedDay:    safeInt(cc.DeployedDay),
+				ClassOfService: cc.ClassOfService,
+				ValueEstimate:  cc.ValueEstimate,
+				SelectedDay:    cc.SelectedDay,
+				DeployedDay:    cc.DeployedDay,
 				Efforts:        efforts,
 			}
 		}

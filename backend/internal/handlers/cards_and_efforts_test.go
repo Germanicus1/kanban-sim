@@ -79,34 +79,34 @@ func TestCreateGame_CardsAndEffortsMatchConfig(t *testing.T) {
 			}
 
 			// assert class_of_service
-			if want.ClassOfService != nil {
-				if !cls.Valid || cls.String != *want.ClassOfService {
-					t.Errorf("classOfService = %v; want %v", cls.String, *want.ClassOfService)
+			if want.ClassOfService != "" {
+				if !cls.Valid || cls.String != want.ClassOfService {
+					t.Errorf("classOfService = %v; want %v", cls.String, want.ClassOfService)
 				}
 			} else if cls.Valid {
 				t.Errorf("expected no classOfService, got %q", cls.String)
 			}
 
 			// assert value_estimate
-			if want.ValueEstimate != nil {
-				if !val.Valid || val.String != *want.ValueEstimate {
-					t.Errorf("valueEstimate = %v; want %v", val.String, *want.ValueEstimate)
+			if want.ValueEstimate != "" {
+				if !val.Valid || val.String != want.ValueEstimate {
+					t.Errorf("valueEstimate = %v; want %v", val.String, want.ValueEstimate)
 				}
 			} else if val.Valid {
 				t.Errorf("expected no valueEstimate, got %q", val.String)
 			}
 
 			// assert selected_day
-			if want.SelectedDay != nil {
-				if !sel.Valid || int(sel.Int64) != *want.SelectedDay {
-					t.Errorf("selectedDay = %v; want %v", sel.Int64, *want.SelectedDay)
+			if want.SelectedDay != 0 {
+				if !sel.Valid || int(sel.Int64) != want.SelectedDay {
+					t.Errorf("selectedDay = %v; want %v", sel.Int64, want.SelectedDay)
 				}
 			}
 
 			// assert deployed_day
-			if want.DeployedDay != nil {
-				if !dep.Valid || int(dep.Int64) != *want.DeployedDay {
-					t.Errorf("deployedDay = %v; want %v", dep.Int64, *want.DeployedDay)
+			if want.DeployedDay != 0 {
+				if !dep.Valid || int(dep.Int64) != want.DeployedDay {
+					t.Errorf("deployedDay = %v; want %v", dep.Int64, want.DeployedDay)
 				}
 			}
 
