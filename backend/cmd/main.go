@@ -1,93 +1,95 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/Germanicus1/kanban-sim/internal/database"
 	"github.com/Germanicus1/kanban-sim/internal/games"
 	"github.com/Germanicus1/kanban-sim/internal/handlers"
+	"github.com/Germanicus1/kanban-sim/internal/server"
 
 	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Failed to load .env: %v", err)
 	}
 
-	// Parse command-line flags This is useful for running migrations without
-	// starting the server. You can run the server with `go run main.go` or just
-	// run migrations with `go run main.go -migrate-only`
+	// Parse flags
 	migrateOnly := flag.Bool("migrate-only", false, "Run migrations only")
 	flag.Parse()
 
+	// Initialize DB
 	db, err := database.InitDB()
 	if err != nil {
-		log.Fatal("Failed to initialize database:", err)
+		log.Fatal("Failed to initialize database: ", err)
 	}
-
-	if err := db.Ping(); err != nil {
-		log.Fatal("Failed to ping database:", err)
-	}
-
 	defer func() {
 		if err := db.Close(); err != nil {
 			log.Printf("Error closing database: %v", err)
 		}
 	}()
 
-	// Run migrations if the flag is set. Server is not started in this case.
+	if err := db.Ping(); err != nil {
+		log.Fatal("Failed to ping database: ", err)
+	}
+
+	// Migrations only
 	if *migrateOnly {
 		log.Println("Running migrations...")
-		err = database.Migrate(db, "./internal/database/migrations")
-		if err != nil {
-			log.Fatal("Failed to migrate DB:", err)
+		if err := database.Migrate(db, "./internal/database/migrations"); err != nil {
+			log.Fatal("Failed to migrate DB: ", err)
 		}
 		return
 	}
 
-	err = database.Migrate(db, "./internal/database/migrations")
-	if err != nil {
-		log.Fatal("Failed to migrate DB:", err)
+	// Auto-migrate on startup
+	if err := database.Migrate(db, "./internal/database/migrations"); err != nil {
+		log.Fatal("Failed to migrate DB: ", err)
 	}
 
-	// Handle graceful shutdown
+	// Setup services and handlers
+	repo := games.NewSQLRepo(db)
+	svc := games.NewService(repo)
+	gh := handlers.NewGameHandler(svc)
+	ah := handlers.NewAppHandler()
+	router := server.NewRouter(ah, gh)
+
+	// Configure HTTP server with timeouts
+	srv := &http.Server{
+		Addr:              ":8080",
+		Handler:           router,
+		ReadTimeout:       5 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+
+	// Graceful shutdown on SIGINT or SIGTERM
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-quit
 		log.Println("Shutting down server...")
-		os.Exit(0)
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatalf("Server forced to shutdown: %v", err)
+		}
 	}()
 
-	mux := http.NewServeMux()
-
-	repo := games.NewSQLRepo(db) // your sql_repo.go
-	svc := games.NewService(repo)
-	gh := handlers.NewGameHandler(svc) // game_handler.go
-	appH := handlers.NewAppHandler()
-
-	mux.HandleFunc("GET /", appH.Home)
-	mux.HandleFunc("GET /ping", appH.Ping)
-	mux.HandleFunc("POST /games", gh.CreateGame)
-	mux.HandleFunc("GET /games/{id}", gh.GetGame)
-	mux.HandleFunc("GET /games/{id}/board", gh.GetBoard)
-	mux.HandleFunc("DELETE /games/{id}", gh.DeleteGame)
-	mux.HandleFunc("PATCH /games/{id}", gh.UpdateGame)
-
-	// API documentation
-	mux.HandleFunc("GET /openapi.yaml", appH.OpenAPI)
-	mux.HandleFunc("GET /docs", appH.DocsRedirect)
-	mux.Handle(
-		"GET /docs/",
-		http.StripPrefix("/docs/", http.FileServer(http.Dir("./docs"))),
-	)
-
+	// Start server
 	log.Println("Server running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("ListenAndServe error: %v", err)
+	}
 }
