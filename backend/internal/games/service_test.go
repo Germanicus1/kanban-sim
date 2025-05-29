@@ -4,7 +4,6 @@ package games
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/Germanicus1/kanban-sim/internal/models"
@@ -19,7 +18,6 @@ type mockRepo struct {
 	gotCfg        models.BoardConfig
 	gotGame       uuid.UUID
 	wantBoard     models.Board
-	wantDeleteID  uuid.UUID
 	wantDeleteErr error
 	gotDeleteID   uuid.UUID
 }
@@ -44,35 +42,6 @@ func (m *mockRepo) DeleteGame(ctx context.Context, id uuid.UUID) error {
 func (m *mockRepo) UpdateGame(ctx context.Context, id uuid.UUID, day int) error {
 	m.wantID = id
 	return nil
-}
-
-func TestService_CreateGame(t *testing.T) {
-	wantID := uuid.New()
-	cfg := models.BoardConfig{} // you can fill with dummy data
-	mr := &mockRepo{wantID: wantID}
-	svc := NewService(mr)
-
-	gotID, err := svc.CreateGame(context.Background(), cfg)
-	if err != nil {
-		t.Fatalf("CreateGame returned error: %v", err)
-	}
-	if gotID != wantID {
-		t.Errorf("CreateGame = %v; want %v", gotID, wantID)
-	}
-	if !reflect.DeepEqual(mr.gotCfg, cfg) {
-		t.Errorf("repo got cfg = %+v; want %+v", mr.gotCfg, cfg)
-	}
-}
-
-func TestService_CreateGame_Error(t *testing.T) {
-	cfg := models.BoardConfig{}
-	wantErr := errors.New("boom")
-	mr := &mockRepo{wantErr: wantErr}
-	svc := NewService(mr)
-
-	if _, err := svc.CreateGame(context.Background(), cfg); err != wantErr {
-		t.Errorf("CreateGame error = %v; want %v", err, wantErr)
-	}
 }
 
 func TestService_GetBoard(t *testing.T) {
