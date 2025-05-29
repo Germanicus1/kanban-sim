@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Germanicus1/kanban-sim/internal/models"
+	"github.com/Germanicus1/kanban-sim/internal/response"
 	"github.com/google/uuid"
 )
 
@@ -304,7 +305,7 @@ func (r *sqlRepo) DeleteGame(ctx context.Context, id uuid.UUID) error {
 	const q = `DELETE FROM games WHERE id = $1`
 	if _, err := r.db.ExecContext(ctx, q, id); err != nil {
 		if err == sql.ErrNoRows {
-			return ErrNotFound
+			return response.ErrNotFound
 		}
 		return fmt.Errorf("delete game: %w", err)
 	}

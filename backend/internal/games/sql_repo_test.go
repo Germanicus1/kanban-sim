@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/Germanicus1/kanban-sim/internal/response"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -119,7 +120,7 @@ func TestSQLRepo_DeleteGame_NotFound(t *testing.T) {
 	).WithArgs(id).WillReturnError(sql.ErrNoRows)
 
 	err := repo.DeleteGame(context.Background(), id)
-	require.ErrorIs(t, err, ErrNotFound)
+	require.ErrorIs(t, err, response.ErrNotFound)
 }
 
 func TestSQLRepo_UpdateGame_Success(t *testing.T) {

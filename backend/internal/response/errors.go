@@ -64,3 +64,5 @@ func MapPostgresError(err error) (int, string) {
 	// Default case for generic SQL errors
 	return http.StatusInternalServerError, ErrDatabaseError
 }
+
+var ErrNotFound = errors.New("not found")

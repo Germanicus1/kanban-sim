@@ -191,7 +191,7 @@ func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Service.DeleteGame(r.Context(), gameID); err != nil {
-		if errors.Is(err, games.ErrNotFound) {
+		if errors.Is(err, response.ErrNotFound) {
 			response.RespondWithError(w, http.StatusNotFound, response.ErrGameNotFound)
 		} else {
 			response.RespondWithError(w, http.StatusInternalServerError, response.ErrInternalServerError)
@@ -223,7 +223,7 @@ func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Service.UpdateGame(r.Context(), gameID, req.Day); err != nil {
-		if errors.Is(err, games.ErrNotFound) {
+		if errors.Is(err, response.ErrNotFound) {
 			response.RespondWithError(w, http.StatusNotFound, response.ErrGameNotFound)
 		} else {
 			response.RespondWithError(w, http.StatusInternalServerError, response.ErrInternalServerError)

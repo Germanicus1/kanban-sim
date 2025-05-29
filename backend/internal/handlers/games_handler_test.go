@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Germanicus1/kanban-sim/internal/games"
 	"github.com/Germanicus1/kanban-sim/internal/models"
 	"github.com/Germanicus1/kanban-sim/internal/response"
 	"github.com/google/uuid"
@@ -105,7 +104,7 @@ func TestGameHandler_DeleteGame_Success(t *testing.T) {
 }
 
 func TestGameHandler_DeleteGame_NotFound(t *testing.T) {
-	svc := &fakeService{retErr: games.ErrNotFound}
+	svc := &fakeService{retErr: response.ErrNotFound}
 	h := NewGameHandler(svc)
 
 	mux := http.NewServeMux()

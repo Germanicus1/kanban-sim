@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Germanicus1/kanban-sim/internal/models"
+	"github.com/Germanicus1/kanban-sim/internal/response"
 	"github.com/google/uuid"
 )
 
@@ -108,11 +109,11 @@ func TestService_DeleteGame_Success(t *testing.T) {
 
 func TestService_DeleteGame_NotFound(t *testing.T) {
 	id := uuid.New()
-	mr := &mockRepo{wantDeleteErr: ErrNotFound}
+	mr := &mockRepo{wantDeleteErr: response.ErrNotFound}
 	svc := NewService(mr)
 
 	err := svc.DeleteGame(context.Background(), id)
-	if !errors.Is(err, ErrNotFound) {
+	if !errors.Is(err, response.ErrNotFound) {
 		t.Errorf("DeleteGame error = %v; want ErrNotFound", err)
 	}
 }
