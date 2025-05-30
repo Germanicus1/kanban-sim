@@ -19,6 +19,7 @@ func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler) http.Handler {
 
 	// games API
 	mux.HandleFunc("POST /games", gh.CreateGame)
+	mux.HandleFunc("GET /games", gh.ListGames)
 	mux.HandleFunc("GET /games/{id}", gh.GetGame)
 	mux.HandleFunc("GET /games/{id}/board", gh.GetBoard)
 	mux.HandleFunc("PATCH /games/{id}", gh.UpdateGame)
