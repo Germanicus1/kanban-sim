@@ -107,13 +107,7 @@ func TestSQLRepo_CreatePlayer(t *testing.T) {
 			tc.setupMock(mock, expectedID)
 
 			// Execute
-			id, err := repo.CreatePlayer(
-				context.Background(),
-				models.Player{
-					Name:   "Alice",
-					GameID: uuid.New(),
-				},
-			)
+			id, err := repo.CreatePlayer(context.Background(), uuid.New(), "Alice")
 
 			if tc.wantErrContain != "" {
 				// Error cases always return uuid.Nil

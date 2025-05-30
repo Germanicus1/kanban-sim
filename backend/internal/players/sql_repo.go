@@ -14,7 +14,7 @@ type sqlRepo struct {
 	db *sql.DB
 }
 
-func (r *sqlRepo) CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUID, error) {
+func (r *sqlRepo) CreatePlayer(ctx context.Context, gameID uuid.UUID, name string) (uuid.UUID, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("begin tx: %w", err)
@@ -31,7 +31,7 @@ func (r *sqlRepo) CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUI
 		`INSERT INTO players (name, game_id, created_at)
 			 VALUES ($1, $2)
 		 RETURNING id`,
-		cfg.Name, cfg.GameID,
+		name, gameID,
 	).Scan(&playerID); err != nil {
 		tx.Rollback()
 		return uuid.Nil, fmt.Errorf("insert player: %w", err)

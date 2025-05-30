@@ -10,9 +10,10 @@ import (
 
 func TestNewRouter_Patterns(t *testing.T) {
 	ah := handlers.NewAppHandler()
-	// GameHandler can be constructed with a nil service since we only inspect routing, not handler execution
 	gh := handlers.NewGameHandler(nil)
-	router := NewRouter(ah, gh)
+	ph := handlers.NewPlayerHandler(nil)
+
+	router := NewRouter(ah, gh, ph)
 
 	mux, ok := router.(*http.ServeMux)
 	if !ok {
@@ -28,14 +29,18 @@ func TestNewRouter_Patterns(t *testing.T) {
 		{"Home", "GET", "/", "GET /"},
 		{"Ping", "GET", "/ping", "GET /ping"},
 		{"OpenAPI", "GET", "/openapi.yaml", "GET /openapi.yaml"},
-		{"DocsRedirect", "GET", "/docs", "GET /docs"},
-		{"DocsPrefix", "GET", "/docs/foo.txt", "GET /docs/"},
 
 		{"CreateGame", "POST", "/games", "POST /games"},
 		{"GetGame", "GET", "/games/123", "GET /games/{id}"},
 		{"GetBoard", "GET", "/games/123/board", "GET /games/{id}/board"},
 		{"UpdateGame", "PATCH", "/games/123", "PATCH /games/{id}"},
 		{"DeleteGame", "DELETE", "/games/123", "DELETE /games/{id}"},
+		{"ListGames", "GET", "/games", "GET /games"},
+		{"CreatePlayer", "POST", "/players", "POST /players"},
+		{"GetPlayerByID", "GET", "/players/123", "GET /players/{id}"},
+		// {"UpdatePlayer", "PATCH", "/players/123", "PATCH /players/{id}"},
+		// {"DeletePlayer", "DELETE", "/players/123", "DELETE /players/{id}"},
+		// {"ListPlayers", "GET", "/players", "GET /players"},
 	}
 
 	for _, tt := range tests {

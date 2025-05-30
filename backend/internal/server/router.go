@@ -8,7 +8,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler) http.Handler {
+func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler, ph *handlers.PlayerHandler) http.Handler {
 	mux := http.NewServeMux()
 
 	// public pages
@@ -24,6 +24,13 @@ func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler) http.Handler {
 	mux.HandleFunc("GET /games/{id}/board", gh.GetBoard)
 	mux.HandleFunc("PATCH /games/{id}", gh.UpdateGame)
 	mux.HandleFunc("DELETE /games/{id}", gh.DeleteGame)
+
+	// players API
+	mux.HandleFunc("POST /players", ph.CreatePlayer)
+	mux.HandleFunc("GET /players/{id}", ph.GetPlayerByID)
+	// mux.HandleFunc("PATCH /players/{id}", ph.UpdatePlayer)
+	// mux.HandleFunc("DELETE /players/{id}", ph.DeletePlayer)
+	// mux.HandleFunc("GET /players", ph.ListPlayers)
 
 	return mux
 }

@@ -27,6 +27,7 @@ import (
 	"github.com/Germanicus1/kanban-sim/backend/internal/database"
 	"github.com/Germanicus1/kanban-sim/backend/internal/games"
 	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
+	"github.com/Germanicus1/kanban-sim/backend/internal/players"
 	"github.com/Germanicus1/kanban-sim/backend/internal/server"
 
 	"github.com/joho/godotenv"
@@ -72,11 +73,15 @@ func main() {
 	}
 
 	// Setup services and handlers
-	repo := games.NewSQLRepo(db)
-	svc := games.NewService(repo)
-	gh := handlers.NewGameHandler(svc)
+	gameRepo := games.NewSQLRepo(db)
+	playerRepo := players.NewSQLRepo(db)
+	gameSvc := games.NewService(gameRepo)
+	playerSvc := players.NewService(playerRepo)
+
+	gh := handlers.NewGameHandler(gameSvc)
 	ah := handlers.NewAppHandler()
-	router := server.NewRouter(ah, gh)
+	ph := handlers.NewPlayerHandler(playerSvc)
+	router := server.NewRouter(ah, gh, ph)
 
 	// Configure HTTP server with timeouts
 	srv := &http.Server{

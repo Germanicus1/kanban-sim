@@ -18,8 +18,8 @@ type mockRepo struct {
 	gotDeleteID   uuid.UUID
 }
 
-func (m *mockRepo) CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUID, error) {
-	m.gotPlayer = cfg
+func (m *mockRepo) CreatePlayer(ctx context.Context, gameID uuid.UUID, name string) (uuid.UUID, error) {
+	m.gotPlayer = models.Player{ID: gameID, Name: name}
 	return m.wantID, m.wantErr
 }
 
@@ -50,7 +50,7 @@ func TestService_CreatePlayer(t *testing.T) {
 	mr := &mockRepo{wantID: wantID, wantPlayer: wantPlayer}
 	svc := players.NewService(mr)
 
-	gotID, err := svc.CreatePlayer(context.Background(), wantPlayer)
+	gotID, err := svc.CreatePlayer(context.Background(), wantPlayer.ID, wantPlayer.Name)
 	if err != nil {
 		t.Fatalf("CreatePlayer returned error: %v", err)
 	}
@@ -115,7 +115,7 @@ func TestService_ListPlayers(t *testing.T) {
 	mr := &mockRepo{wantPlayer: wantPlayer}
 	svc := players.NewService(mr)
 
-	gotPlayers, err := svc.ListPlayers(context.Background())
+	gotPlayers, err := svc.ListPlayers(context.Background(), wantID)
 	if err != nil {
 		t.Fatalf("ListPlayers returned error: %v", err)
 	}

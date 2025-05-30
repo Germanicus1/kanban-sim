@@ -9,7 +9,7 @@ import (
 )
 
 type Repository interface {
-	CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUID, error)
+	CreatePlayer(ctx context.Context, gamid uuid.UUID, name string) (uuid.UUID, error)
 	GetPlayerByID(ctx context.Context, id uuid.UUID) (*models.Player, error)
 	UpdatePlayer(ctx context.Context, id uuid.UUID, name string) error
 	DeletePlayer(ctx context.Context, id uuid.UUID) error

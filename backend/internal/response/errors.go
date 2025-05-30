@@ -34,6 +34,7 @@ const (
 	ErrSyntaxError              = "SYNTAX_ERROR"
 	ErrUndefinedColumn          = "UNDEFINED_COLUMN"
 	ErrInvalidForeignKey        = "INVALID_FOREIGN_KEY"
+	ErrInvalidPlayerData        = "INVALID_PLAYER_DATA"
 )
 
 // MapPostgresError maps PostgreSQL error codes to HTTP status codes and error messages
