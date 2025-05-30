@@ -9,8 +9,8 @@ import (
 
 type ServiceInterface interface {
 	CreatePlayer(name string) (*models.Player, error)
-	GetPlayer(id uuid.UUID) (*models.Player, error)
-	UpdatePlayer(id uuid.UUID, name string) (*models.Player, error)
+	GetPlayerByID(id uuid.UUID) (*models.Player, error)
+	UpdatePlayer(id uuid.UUID, name string) error
 	DeletePlayer(id uuid.UUID) error
 	ListPlayers() ([]*models.Player, error)
 }
@@ -27,24 +27,19 @@ func (s *Service) CreatePlayer(ctx context.Context, cfg models.Player) (uuid.UUI
 	return s.repo.CreatePlayer(ctx, cfg)
 }
 
-//TODO implement the methods below
-
-func (s *Service) GetPlayer(id string) (*models.Player, error) {
-	// TODO: implement
-	panic("not implemented")
+func (s *Service) GetPlayerByID(ctx context.Context, id uuid.UUID) (*models.Player, error) {
+	return s.repo.GetPlayerByID(ctx, id)
 }
 
-func (s *Service) UpdatePlayer(id, name string) (*models.Player, error) {
-	// TODO: implement
-	panic("not implemented")
+// TODO implement the methods below
+func (s *Service) UpdatePlayer(ctx context.Context, id uuid.UUID, name string) error {
+	return s.repo.UpdatePlayer(ctx, id, name)
 }
 
-func (s *Service) DeletePlayer(id uuid.UUID) error {
-	// TODO: implement
-	panic("not implemented")
+func (s *Service) DeletePlayer(ctx context.Context, id uuid.UUID) error {
+	return s.repo.DeletePlayer(ctx, id)
 }
 
-func (s *Service) ListPlayers() ([]*models.Player, error) {
-	// TODO: implement
-	panic("not implemented")
+func (s *Service) ListPlayers(ctx context.Context) ([]*models.Player, error) {
+	return s.repo.ListPlayers(context.Background(), uuid.Nil) // Assuming gameID is not needed here
 }

@@ -67,7 +67,9 @@ paths:
           description: List of games
           schema:
             items:
-              $ref: '#/definitions/models.Game'
+              items:
+                $ref: '#/definitions/models.Game'
+              type: array
             type: array
         "500":
           description: Internal server error

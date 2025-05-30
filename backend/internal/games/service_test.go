@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// mockRepo implements only the bits of Repository we need.
 type mockRepo struct {
 	wantID        uuid.UUID
 	wantErr       error

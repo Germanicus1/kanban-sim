@@ -114,7 +114,27 @@ func (r *sqlRepo) DeletePlayer(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
 func (r *sqlRepo) ListPlayers(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error) {
-	// SQL logic to list all players
-	return nil, nil // placeholder
+	const q = `SELECT id, name, game_id FROM players WHERE game_id = $1`
+	rows, err := r.db.QueryContext(ctx, q, gameID)
+	if err != nil {
+		return nil, fmt.Errorf("query players: %w", err)
+	}
+	defer rows.Close()
+
+	var players []*models.Player
+	for rows.Next() {
+		var player models.Player
+		if err := rows.Scan(&player.ID, &player.Name, &player.GameID); err != nil {
+			return nil, fmt.Errorf("scan player: %w", err)
+		}
+		players = append(players, &player)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+
+	return players, nil
 }

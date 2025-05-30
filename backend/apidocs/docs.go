@@ -39,7 +39,10 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Game"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/models.Game"
+                                }
                             }
                         }
                     },

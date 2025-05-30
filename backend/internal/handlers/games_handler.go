@@ -263,7 +263,7 @@ func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
 // @Description  Returns a list of all games in the system.
 // @Tags         games
 // @Produce      json
-// @Success      200  {array}   models.Game  "List of games"
+// @Success      200  {array}   []models.Game  "List of games"
 // @Failure      500  {object}  response.ErrorResponse  "Internal server error"
 // @Router       /games [get]
 func (h *GameHandler) ListGames(w http.ResponseWriter, r *http.Request) {
