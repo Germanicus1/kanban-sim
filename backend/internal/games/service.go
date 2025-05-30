@@ -15,6 +15,7 @@ type ServiceInterface interface {
 	GetGame(ctx context.Context, id uuid.UUID) (models.Game, error)
 	DeleteGame(ctx context.Context, id uuid.UUID) error
 	UpdateGame(ctx context.Context, id uuid.UUID, day int) error
+	ListGames(ctx context.Context) ([]models.Game, error)
 }
 
 // Service holds the business-logic methods.
@@ -50,4 +51,8 @@ func (s *Service) DeleteGame(ctx context.Context, id uuid.UUID) error {
 // UpdateGame forwards to the repository.
 func (s *Service) UpdateGame(ctx context.Context, id uuid.UUID, day int) error {
 	return s.repo.UpdateGame(ctx, id, day)
+}
+
+func (s *Service) ListGames(ctx context.Context) ([]models.Game, error) {
+	return s.repo.ListGames(ctx)
 }

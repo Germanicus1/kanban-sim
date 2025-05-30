@@ -322,3 +322,26 @@ func (r *sqlRepo) UpdateGame(ctx context.Context, id uuid.UUID, day int) error {
 	}
 	return nil
 }
+
+func (r *sqlRepo) ListGames(ctx context.Context) ([]models.Game, error) {
+	const q = `SELECT id, created_at, day FROM games ORDER BY created_at DESC`
+	rows, err := r.db.QueryContext(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("query games: %w", err)
+	}
+	defer rows.Close()
+
+	var games []models.Game
+	for rows.Next() {
+		var g models.Game
+		if err := rows.Scan(&g.ID, &g.CreatedAt, &g.Day); err != nil {
+			return nil, fmt.Errorf("scan game: %w", err)
+		}
+		games = append(games, g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate games: %w", err)
+	}
+
+	return games, nil
+}

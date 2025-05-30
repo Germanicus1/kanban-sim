@@ -38,6 +38,11 @@ func (f *fakeService) UpdateGame(ctx context.Context, id uuid.UUID, day int) err
 	return f.retErr
 }
 
+func (f *fakeService) ListGames(ctx context.Context) ([]models.Game, error) {
+	f.calledID = uuid.Nil // Not used in this test
+	return nil, f.retErr
+}
+
 func TestGameHandler_GetGame_Success(t *testing.T) {
 	svc := &fakeService{retErr: nil}
 	h := NewGameHandler(svc)
@@ -142,5 +147,25 @@ func TestGameHandler_DeleteGame_BadID(t *testing.T) {
 	}
 	if !strings.Contains(rr.Body.String(), `"success":false`) {
 		t.Errorf("body = %q; want JSON error envelope", rr.Body.String())
+	}
+}
+
+func TestGameHandler_ListGames(t *testing.T) {
+	svc := &fakeService{retErr: nil}
+	h := NewGameHandler(svc)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /games", h.ListGames)
+
+	req := httptest.NewRequest("GET", "/games", nil)
+	rr := httptest.NewRecorder()
+
+	mux.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d; want %d", rr.Code, http.StatusOK)
+	}
+	if svc.calledID != uuid.Nil {
+		t.Errorf("service.ListGames called with %v; want uuid.Nil", svc.calledID)
 	}
 }

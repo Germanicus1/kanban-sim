@@ -44,6 +44,10 @@ func (m *mockRepo) UpdateGame(ctx context.Context, id uuid.UUID, day int) error 
 	return nil
 }
 
+func (m *mockRepo) ListGames(ctx context.Context) ([]models.Game, error) {
+	return []models.Game{}, nil
+}
+
 func TestService_GetBoard(t *testing.T) {
 	wantID := uuid.New()
 	wantBoard := models.Board{GameID: wantID}

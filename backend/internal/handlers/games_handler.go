@@ -174,35 +174,20 @@ func (h *GameHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
 	// json.NewEncoder(w).Encode(board)
 }
 
-// internal/handlers/game_handler.go
-func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		w.Header().Set("Allow", http.MethodDelete)
-		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
-		return
-	}
-
-	// TODO: Route for DELETE /games/{id}
-	// This works because of the route "DELETE /games/{id}"
-	idStr := r.PathValue("id")
-	gameID, err := uuid.Parse(idStr)
-	if err != nil {
-		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidGameID)
-		return
-	}
-
-	if err := h.Service.DeleteGame(r.Context(), gameID); err != nil {
-		if errors.Is(err, response.ErrNotFound) {
-			response.RespondWithError(w, http.StatusNotFound, response.ErrGameNotFound)
-		} else {
-			response.RespondWithError(w, http.StatusInternalServerError, response.ErrInternalServerError)
-		}
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
+// UpdateGame updates the “day” field of an existing game.
+// @Summary      Update game day
+// @Description  Updates the specified game’s current day by its UUID.
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string              true  "Game ID"    Format(uuid)
+// @Param        body  body      updateGameRequest   true  "New game day"
+// @Success      204
+// @Failure      400   {object}  response.ErrorResponse  "Invalid game ID or JSON payload"
+// @Failure      404   {object}  response.ErrorResponse  "Game not found"
+// @Failure      405   {object}  response.ErrorResponse  "Method not allowed"
+// @Failure      500   {object}  response.ErrorResponse  "Internal server error"
+// @Router       /games/{id} [patch]
 func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPatch {
 		w.Header().Set("Allow", http.MethodPatch)
@@ -235,11 +220,65 @@ func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-/*
-curl -i -X PATCH \
-  http://localhost:8080/games/4e0a45df-b1e7-4c9c-9ff2-c063fc65e2e5 \
-  -H "Content-Type: application/json" \
-  -d '{"day":5}'
+// DeleteGame deletes a game by its UUID.
+// @Summary      Delete game by ID
+// @Description  Removes the game record identified by the given UUID.
+// @Tags         games
+// @Produce      json
+// @Param        id   path      string  true  "Game ID"  Format(uuid)
+// @Success      204  "No Content"
+// @Failure      400   {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      404   {object}  response.ErrorResponse  "Game not found"
+// @Failure      405   {object}  response.ErrorResponse  "Method not allowed"
+// @Failure      500   {object}  response.ErrorResponse  "Internal server error"
+// @Router       /games/{id} [delete]
+func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		w.Header().Set("Allow", http.MethodDelete)
+		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
+		return
+	}
 
+	idStr := r.PathValue("id")
+	gameID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidGameID)
+		return
+	}
 
-*/
+	if err := h.Service.DeleteGame(r.Context(), gameID); err != nil {
+		if errors.Is(err, response.ErrNotFound) {
+			response.RespondWithError(w, http.StatusNotFound, response.ErrGameNotFound)
+		} else {
+			response.RespondWithError(w, http.StatusInternalServerError, response.ErrInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ListGames retrieves all games.
+// @Summary      List all games
+// @Description  Returns a list of all games in the system.
+// @Tags         games
+// @Produce      json
+// @Success      200  {array}   models.Game  "List of games"
+// @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Router       /games [get]
+func (h *GameHandler) ListGames(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
+		return
+	}
+
+	games, err := h.Service.ListGames(r.Context())
+	if err != nil {
+		log.Printf("ListGames: failed to retrieve games: %v", err)
+		response.RespondWithError(w, http.StatusInternalServerError, response.ErrInternalServerError)
+		return
+	}
+
+	response.RespondWithData(w, games)
+}

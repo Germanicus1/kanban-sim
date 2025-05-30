@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  handlers.updateGameRequest:
+    properties:
+      day:
+        type: integer
+    type: object
   models.Game:
     properties:
       created_at:
@@ -53,6 +58,24 @@ info:
   version: "1.0"
 paths:
   /games:
+    get:
+      description: Returns a list of all games in the system.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of games
+          schema:
+            items:
+              $ref: '#/definitions/models.Game'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List all games
+      tags:
+      - games
     post:
       description: Creates a new game using the embedded default board; no request
         body required
@@ -71,6 +94,39 @@ paths:
       tags:
       - games
   /games/{id}:
+    delete:
+      description: Removes the game record identified by the given UUID.
+      parameters:
+      - description: Game ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid or missing game ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Game not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Delete game by ID
+      tags:
+      - games
     get:
       description: Returns the full game record for the given UUID.
       parameters:
@@ -100,6 +156,47 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Get game by ID
+      tags:
+      - games
+    patch:
+      consumes:
+      - application/json
+      description: Updates the specified game’s current day by its UUID.
+      parameters:
+      - description: Game ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New game day
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.updateGameRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid game ID or JSON payload
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Game not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update game day
       tags:
       - games
 swagger: "2.0"

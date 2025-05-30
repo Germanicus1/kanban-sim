@@ -15,6 +15,7 @@ type Repository interface {
 	GetGameByID(ctx context.Context, id uuid.UUID) (models.Game, error)
 	DeleteGame(ctx context.Context, id uuid.UUID) error
 	UpdateGame(ctx context.Context, id uuid.UUID, day int) error
+	ListGames(ctx context.Context) ([]models.Game, error)
 }
 
 // NewSQLRepo constructs a games.Repository backed by *sql.DB.

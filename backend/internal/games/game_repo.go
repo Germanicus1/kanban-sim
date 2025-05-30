@@ -18,6 +18,7 @@ type GameRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	ListEvents(ctx context.Context, gameID uuid.UUID) ([]models.GameEvent, error)
 	GetBoard(ctx context.Context, gameID uuid.UUID) (*models.Board, error)
+	ListGames(ctx context.Context) ([]models.Game, error)
 }
 
 type BoardRepository interface {
