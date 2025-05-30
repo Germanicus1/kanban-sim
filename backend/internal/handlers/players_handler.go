@@ -112,9 +112,24 @@ func (h *PlayerHandler) GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 	response.RespondWithData(w, player)
 }
 
+// @Summary      Update a player
+// @Description UpdatePlayer handles HTTP PUT requests to update a player's information.
+// @Description It validates the request method, decodes the request payload, and ensures
+// @Description the payload contains valid player data. If the data is valid, it calls the
+// @Description service layer to update the player in the database. In case of errors, it
+// @Description responds with appropriate HTTP status codes and error messages.
+// @Tags         players
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      models.UpdatePlayerRequest  true  "Player update payload"
+// @Success      200      {string}  string                      "Update successful (empty response)"
+// @Failure      400      {object}  response.ErrorResponse     "Invalid player ID or name"
+// @Failure      405      {object}  response.ErrorResponse     "Method not allowed"
+// @Failure      500      {object}  response.ErrorResponse     "Internal server error"
+// @Router       /players [put]
 func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		w.Header().Set("Allow", http.MethodPut)
+	if r.Method != http.MethodPatch {
+		w.Header().Set("Allow", http.MethodPatch)
 		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
 		return
 	}
