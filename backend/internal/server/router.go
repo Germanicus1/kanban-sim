@@ -28,7 +28,7 @@ func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler, ph *handlers.P
 	// players API
 	mux.HandleFunc("POST /players", ph.CreatePlayer)
 	mux.HandleFunc("GET /players/{id}", ph.GetPlayerByID)
-	// mux.HandleFunc("PATCH /players/{id}", ph.UpdatePlayer)
+	mux.HandleFunc("PATCH /players/{id}", ph.UpdatePlayer)
 	// mux.HandleFunc("DELETE /players/{id}", ph.DeletePlayer)
 	// mux.HandleFunc("GET /players", ph.ListPlayers)
 

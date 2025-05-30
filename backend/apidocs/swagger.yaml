@@ -5,6 +5,15 @@ definitions:
       day:
         type: integer
     type: object
+  models.CreatePlayerRequest:
+    properties:
+      game_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: John
+        type: string
+    type: object
   models.Game:
     properties:
       created_at:
@@ -12,6 +21,15 @@ definitions:
       day:
         type: integer
       id:
+        type: string
+    type: object
+  models.Player:
+    properties:
+      gameID:
+        type: string
+      id:
+        type: string
+      name:
         type: string
     type: object
   response.CreateGameData:
@@ -201,4 +219,75 @@ paths:
       summary: Update game day
       tags:
       - games
+  /players:
+    post:
+      consumes:
+      - application/json
+      description: Creates a player under the specified game ID and returns the new
+        player's UUID.
+      parameters:
+      - description: Player creation payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePlayerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created player UUID
+          schema:
+            type: string
+        "400":
+          description: Invalid game ID or player name
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new player
+      tags:
+      - players
+  /players/{id}:
+    get:
+      description: Returns the full player record for the given player UUID.
+      parameters:
+      - description: Game ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Player retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Player'
+        "400":
+          description: Invalid or missing player ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Player not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get player by ID
+      tags:
+      - players
 swagger: "2.0"

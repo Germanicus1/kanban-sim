@@ -28,7 +28,7 @@ func (r *sqlRepo) CreatePlayer(ctx context.Context, gameID uuid.UUID, name strin
 
 	var playerID uuid.UUID
 	if err := tx.QueryRowContext(ctx,
-		`INSERT INTO players (name, game_id, created_at)
+		`INSERT INTO players (name, game_id)
 			 VALUES ($1, $2)
 		 RETURNING id`,
 		name, gameID,
