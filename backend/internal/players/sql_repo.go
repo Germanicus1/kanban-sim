@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Germanicus1/kanban-sim/internal/models"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
 	"github.com/google/uuid"
 )
 

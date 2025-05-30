@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Germanicus1/kanban-sim/internal/database"
-	"github.com/Germanicus1/kanban-sim/internal/response"
-	internal "github.com/Germanicus1/kanban-sim/internal/utils"
+	"github.com/Germanicus1/kanban-sim/backend/internal/database"
+	"github.com/Germanicus1/kanban-sim/backend/internal/response"
+	internal "github.com/Germanicus1/kanban-sim/backend/utils"
 	"github.com/google/uuid"
 )
 

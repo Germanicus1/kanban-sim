@@ -14,7 +14,7 @@ YELLOW:= \033[0;33m
 BLUE  := \033[0;34m
 
 # === Commands ===
-.PHONY: help db-new db-up db-down db-status db-reset db-start db-stop db-shell coverage
+.PHONY: help db-new db-up db-down db-status db-reset db-start db-stop db-shell coverage apidocs
 
 help:
 	@echo ""
@@ -28,6 +28,7 @@ help:
 	@echo "  $(BLUE)make db-stop$(RESET)                   # Stop Docker containers"
 	@echo "  $(BLUE)make db-shell$(RESET)                  # Open psql shell"
 	@echo "  $(BLUE)make coverage$(RESET)                  # ./games & ./handlers, only shows %"
+	@echo "  $(BLUE)make apidocs$(RESET)                      # Generaate API docs"
 	@echo ""
 
 db-new:
@@ -72,3 +73,7 @@ db-shell:
 coverage:
 	@go test ./internal/... -cover \
 		| awk '/coverage:/ {n=split($$2,a,"/"); print a[n] ": " $$5}'
+
+apidocs:
+	@go generate ./cmd/main.go
+	@echo "$(GREEN)Documentation generated$(RESET)"

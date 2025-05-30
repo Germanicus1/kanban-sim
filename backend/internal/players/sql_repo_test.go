@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/Germanicus1/kanban-sim/internal/models"
-	"github.com/Germanicus1/kanban-sim/internal/players"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
+	"github.com/Germanicus1/kanban-sim/backend/internal/players"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )

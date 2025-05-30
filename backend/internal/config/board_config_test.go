@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/Germanicus1/kanban-sim/internal/config"
+	"github.com/Germanicus1/kanban-sim/backend/internal/config"
 )
 
 // TestLoadBoardConfig verifies that the embedded board_config.json

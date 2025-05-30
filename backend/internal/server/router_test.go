@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Germanicus1/kanban-sim/internal/handlers"
+	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
 )
 
 func TestNewRouter_Patterns(t *testing.T) {

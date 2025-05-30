@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Germanicus1/kanban-sim/internal/database"
+	"github.com/Germanicus1/kanban-sim/backend/internal/database"
 	"github.com/joho/godotenv"
 )
 

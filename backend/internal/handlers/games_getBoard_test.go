@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Germanicus1/kanban-sim/internal/config"
-	"github.com/Germanicus1/kanban-sim/internal/handlers"
-	"github.com/Germanicus1/kanban-sim/internal/response"
+	"github.com/Germanicus1/kanban-sim/backend/internal/config"
+	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
+	"github.com/Germanicus1/kanban-sim/backend/internal/response"
 	"github.com/google/uuid"
 )
 

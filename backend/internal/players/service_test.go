@@ -1,8 +1,8 @@
 package players_test
 
 import (
-	"github.com/Germanicus1/kanban-sim/internal/models"
-	"github.com/Germanicus1/kanban-sim/internal/players"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
+	"github.com/Germanicus1/kanban-sim/backend/internal/players"
 	"github.com/google/uuid"
 )
 

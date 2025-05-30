@@ -1,10 +1,11 @@
-// internal/server/router.go
 package server
 
 import (
 	"net/http"
 
-	"github.com/Germanicus1/kanban-sim/internal/handlers"
+	_ "github.com/Germanicus1/kanban-sim/backend/apidocs"
+	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler) http.Handler {
@@ -14,11 +15,7 @@ func NewRouter(ah *handlers.AppHandler, gh *handlers.GameHandler) http.Handler {
 	mux.HandleFunc("GET /", ah.Home)
 	mux.HandleFunc("GET /ping", ah.Ping)
 	mux.HandleFunc("GET /openapi.yaml", ah.OpenAPI)
-	mux.HandleFunc("GET /docs", ah.DocsRedirect)
-	mux.Handle(
-		"GET /docs/",
-		http.StripPrefix("/docs/", http.FileServer(http.Dir("./docs"))),
-	)
+	mux.Handle("GET /apidocs/", httpSwagger.WrapHandler)
 
 	// games API
 	mux.HandleFunc("POST /games", gh.CreateGame)

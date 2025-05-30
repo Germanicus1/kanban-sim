@@ -1,3 +1,16 @@
+//go:generate swag init -g ./cmd/main.go -d ../ -o ../apidocs
+
+// @title        Kanban-Sim API
+// @version      1.0
+// @description  A simple Kanban simulation API.
+// @termsOfService http://example.com/terms/
+// @contact.name  Peter Kerschbaumer
+// @contact.email you@example.com
+// @license.name MIT
+// @license.url  https://opensource.org/licenses/MIT
+// @host         localhost:8080
+// @BasePath     /
+
 package main
 
 import (
@@ -10,10 +23,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Germanicus1/kanban-sim/internal/database"
-	"github.com/Germanicus1/kanban-sim/internal/games"
-	"github.com/Germanicus1/kanban-sim/internal/handlers"
-	"github.com/Germanicus1/kanban-sim/internal/server"
+	"github.com/Germanicus1/kanban-sim/backend/internal/database"
+	"github.com/Germanicus1/kanban-sim/backend/internal/games"
+	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
+	"github.com/Germanicus1/kanban-sim/backend/internal/server"
 
 	"github.com/joho/godotenv"
 )

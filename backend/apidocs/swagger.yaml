@@ -1,0 +1,105 @@
+basePath: /
+definitions:
+  models.Game:
+    properties:
+      created_at:
+        type: string
+      day:
+        type: integer
+      id:
+        type: string
+    type: object
+  response.CreateGameData:
+    properties:
+      id:
+        example: 7d7881cf-8d9f-457f-ac93-aa498ea8c0af
+        type: string
+    type: object
+  response.CreateGameResponse:
+    properties:
+      data:
+        $ref: '#/definitions/response.CreateGameData'
+      success:
+        type: boolean
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        example: contextual error message
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  response.GameResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.Game'
+      success:
+        example: true
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: you@example.com
+    name: Peter Kerschbaumer
+  description: A simple Kanban simulation API.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://example.com/terms/
+  title: Kanban-Sim API
+  version: "1.0"
+paths:
+  /games:
+    post:
+      description: Creates a new game using the embedded default board; no request
+        body required
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: New game created
+          schema:
+            $ref: '#/definitions/response.CreateGameResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new game
+      tags:
+      - games
+  /games/{id}:
+    get:
+      description: Returns the full game record for the given UUID.
+      parameters:
+      - description: Game ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Game retrieved successfully
+          schema:
+            $ref: '#/definitions/response.GameResponse'
+        "400":
+          description: Invalid or missing game ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Game not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get game by ID
+      tags:
+      - games
+swagger: "2.0"

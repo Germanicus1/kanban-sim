@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/Germanicus1/kanban-sim/internal/config"
-	"github.com/Germanicus1/kanban-sim/internal/database"
-	"github.com/Germanicus1/kanban-sim/internal/models"
-	"github.com/Germanicus1/kanban-sim/internal/response"
+	"github.com/Germanicus1/kanban-sim/backend/internal/config"
+	"github.com/Germanicus1/kanban-sim/backend/internal/database"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
+	"github.com/Germanicus1/kanban-sim/backend/internal/response"
 	"github.com/google/uuid"
 )
 

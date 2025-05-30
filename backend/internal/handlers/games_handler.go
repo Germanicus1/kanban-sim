@@ -6,10 +6,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Germanicus1/kanban-sim/internal/config"
-	"github.com/Germanicus1/kanban-sim/internal/games"
-	"github.com/Germanicus1/kanban-sim/internal/models"
-	"github.com/Germanicus1/kanban-sim/internal/response"
+	"github.com/Germanicus1/kanban-sim/backend/internal/config"
+	"github.com/Germanicus1/kanban-sim/backend/internal/games"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
+	"github.com/Germanicus1/kanban-sim/backend/internal/response"
 	"github.com/google/uuid"
 )
 
@@ -27,8 +27,14 @@ func NewGameHandler(svc games.ServiceInterface) *GameHandler {
 	return &GameHandler{Service: svc}
 }
 
-// CreateGame handles POST /games by loading the embedded config
-// and passing it straight into your Service.
+// CreateGame creates a new game with the default board.
+// @Summary      Create a new game
+// @Description  Creates a new game using the embedded default board; no request body required
+// @Tags         games
+// @Produce      json
+// @Success      201  {object}  response.CreateGameResponse "New game created"
+// @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Router       /games [post]
 func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	// Only accept POST
 	if r.Method != http.MethodPost {
@@ -91,22 +97,17 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	response.RespondWithData(w, map[string]string{"id": gameID.String()})
 }
 
-// helper to turn *string → string
-func safeString(ptr *string) string {
-	if ptr != nil {
-		return *ptr
-	}
-	return "" // or some default value
-}
-
-// safeInt turns a *int into an int, using 0 if the pointer is nil.
-func safeInt(ptr *int) int {
-	if ptr != nil {
-		return *ptr
-	}
-	return 0
-}
-
+// GetGame retrieves a game by its UUID.
+// @Summary      Get game by ID
+// @Description  Returns the full game record for the given UUID.
+// @Tags         games
+// @Produce      json
+// @Param        id   path      string  true  "Game ID" Format(uuid)
+// @Success      200  {object}  response.GameResponse   "Game retrieved successfully"
+// @Failure      400  {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      404  {object}  response.ErrorResponse  "Game not found"
+// @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Router       /games/{id} [get]
 func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
@@ -129,7 +130,7 @@ func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 	game, err := h.Service.GetGame(r.Context(), gameID)
 	if err != nil {
 		log.Printf("GetGame: failed to load game for %s: %v", gameID, err)
-		response.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		response.RespondWithError(w, http.StatusNotFound, response.ErrGameNotFound)
 		return
 	}
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Germanicus1/kanban-sim/internal/models"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
 )
 
 //go:embed board_config.json
