@@ -32,6 +32,15 @@ definitions:
       name:
         type: string
     type: object
+  models.UpdatePlayerRequest:
+    properties:
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: John
+        type: string
+    type: object
   response.CreateGameData:
     properties:
       id:
@@ -252,6 +261,44 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Create a new player
+      tags:
+      - players
+    put:
+      consumes:
+      - application/json
+      description: |-
+        UpdatePlayer handles HTTP PUT requests to update a player's information.
+        It validates the request method, decodes the request payload, and ensures
+        the payload contains valid player data. If the data is valid, it calls the
+        service layer to update the player in the database. In case of errors, it
+        responds with appropriate HTTP status codes and error messages.
+      parameters:
+      - description: Player update payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePlayerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update successful (empty response)
+          schema:
+            type: string
+        "400":
+          description: Invalid player ID or name
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update a player
       tags:
       - players
   /players/{id}:

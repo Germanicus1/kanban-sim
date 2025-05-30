@@ -27,7 +27,6 @@ supabase/
 docs/
 main
 _scrap/
-apidocs/
 
 # Go workspace file
 go.work
