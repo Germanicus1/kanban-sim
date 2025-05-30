@@ -92,9 +92,10 @@ management API.
 
 config: 71.4%
 database: 76.9%
-games: 52.8%
-handlers: 31.3%
-players: 71.7%
+games: 47.8%
+handlers: 32.4%
+players: 67.1%:
+server: 100.0%
 
 ## Todo & Upcoming Features
 

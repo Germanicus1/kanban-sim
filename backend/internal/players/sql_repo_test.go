@@ -17,7 +17,7 @@ import (
 
 // CreatePlayer tests
 func TestSQLRepo_CreatePlayer(t *testing.T) {
-	const insertQuery = `INSERT INTO players (name, game_id, created_at) VALUES ($1, $2) RETURNING id`
+	const insertQuery = `INSERT INTO players (name, game_id) VALUES ($1, $2) RETURNING id`
 
 	tests := []struct {
 		name           string
