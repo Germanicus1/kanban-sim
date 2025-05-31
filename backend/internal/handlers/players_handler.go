@@ -29,7 +29,7 @@ type Player struct {
 
 // CreatePlayer creates a new player in a game.
 // @Summary      Create a new player
-// @Description  Creates a player under the specified game ID and returns the new player's UUID.
+// @Description.markdown player_create
 // @Tags         players
 // @Accept       json
 // @Produce      json
@@ -113,11 +113,7 @@ func (h *PlayerHandler) GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary      Update a player
-// @Description UpdatePlayer handles HTTP PUT requests to update a player's information.
-// @Description It validates the request method, decodes the request payload, and ensures
-// @Description the payload contains valid player data. If the data is valid, it calls the
-// @Description service layer to update the player in the database. In case of errors, it
-// @Description responds with appropriate HTTP status codes and error messages.
+// @Description.markdown player_update
 // @Tags         players
 // @Accept       json
 // @Produce      json
@@ -126,7 +122,7 @@ func (h *PlayerHandler) GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 // @Failure      400      {object}  response.ErrorResponse     "Invalid player ID or name"
 // @Failure      405      {object}  response.ErrorResponse     "Method not allowed"
 // @Failure      500      {object}  response.ErrorResponse     "Internal server error"
-// @Router       /players [put]
+// @Router       /players [patch]
 func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPatch {
 		w.Header().Set("Allow", http.MethodPatch)

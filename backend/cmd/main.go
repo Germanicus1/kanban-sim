@@ -1,5 +1,4 @@
-//go:generate swag init -g ./cmd/main.go -d ../ -o ../apidocs
-
+//go:generate swag init -g ./cmd/main.go -d ../ -o ../apidocs --md ../apidocs/md
 // @title        Kanban-Sim API
 // @version      1.0
 // @description  A simple Kanban simulation API.

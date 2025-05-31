@@ -238,58 +238,8 @@ const docTemplate = `{
             }
         },
         "/players": {
-            "put": {
-                "description": "UpdatePlayer handles HTTP PUT requests to update a player's information.\nIt validates the request method, decodes the request payload, and ensures\nthe payload contains valid player data. If the data is valid, it calls the\nservice layer to update the player in the database. In case of errors, it\nresponds with appropriate HTTP status codes and error messages.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "players"
-                ],
-                "summary": "Update a player",
-                "parameters": [
-                    {
-                        "description": "Player update payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UpdatePlayerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Update successful (empty response)",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid player ID or name",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "405": {
-                        "description": "Method not allowed",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "post": {
-                "description": "Creates a player under the specified game ID and returns the new player's UUID.",
+                "description": "## CreatePlayer handles the creation of a new player in the game.\n\nIt expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a \"method not allowed\" error. If the payload is invalid or fails validation, it responds with a \"bad request\" error. On successful creation, it returns the created player data. If an error occurs during player creation, it maps the error to an appropriate HTTP status and error code.\n",
                 "consumes": [
                     "application/json"
                 ],
@@ -320,6 +270,56 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid game ID or player name",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "Method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "**UpdatePlayer handles HTTP PUT requests to update a player's information.**\n\nIt validates the request method, decodes the request payload, and ensures the payload contains valid player data. If the data is valid, it calls the service player to update the player in the database. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Update a player",
+                "parameters": [
+                    {
+                        "description": "Player update payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdatePlayerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update successful (empty response)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid player ID or name",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
