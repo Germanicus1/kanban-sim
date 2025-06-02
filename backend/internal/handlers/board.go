@@ -62,16 +62,16 @@ func GetBoard(w http.ResponseWriter, r *http.Request) {
 	// 4) Scan each card into models.Card, then load its efforts
 	for rows.Next() {
 		var (
-			c        models.Card
-			cs, ve   sql.NullString
-			sel, dep sql.NullInt64
+			c            models.Card
+			cs           sql.NullString
+			sel, dep, ve sql.NullInt64
 		)
 		if err := rows.Scan(
 			&c.ID,
 			&c.GameID,
 			&c.ColumnID,
 			&c.Title,
-			&c.ColumnTitle,
+			&c.Title,
 			&cs,
 			&ve,
 			&sel,
@@ -87,7 +87,7 @@ func GetBoard(w http.ResponseWriter, r *http.Request) {
 			c.ClassOfService = cs.String
 		}
 		if ve.Valid {
-			c.ValueEstimate = ve.String
+			c.ValueEstimate = int(ve.Int64)
 		}
 		if sel.Valid {
 			c.SelectedDay = int(sel.Int64)
@@ -131,7 +131,7 @@ func GetBoard(w http.ResponseWriter, r *http.Request) {
 			effortRows.Close()
 		}
 
-		board[c.ColumnTitle] = append(board[c.ColumnTitle], c)
+		board[c.Title] = append(board[c.Title], c)
 	}
 
 	// 6) Return the grouped map[string][]models.Card

@@ -53,7 +53,8 @@
 				{ "effortType": "Testing", "estimate": 3 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S2",
@@ -66,7 +67,8 @@
 				{ "effortType": "Testing", "estimate": 8 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S3",
@@ -79,7 +81,8 @@
 				{ "effortType": "Testing", "estimate": 4 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S4",
@@ -92,7 +95,9 @@
 				{ "effortType": "Testing", "estimate": 7 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 1
+
 		},
 		{
 			"title": "S5",
@@ -105,7 +110,8 @@
 				{ "effortType": "Testing", "estimate": 5 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 2
 		},
 		{
 			"title": "S6",
@@ -118,7 +124,8 @@
 				{ "effortType": "Testing", "estimate": 6 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S7",
@@ -131,7 +138,8 @@
 				{ "effortType": "Testing", "estimate": 2 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S8",
@@ -144,7 +152,8 @@
 				{ "effortType": "Testing", "estimate": 4 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S9",
@@ -157,7 +166,8 @@
 				{ "effortType": "Testing", "estimate": 3 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 0
 		},
 		{
 			"title": "S10",
@@ -170,7 +180,8 @@
 				{ "effortType": "Testing", "estimate": 5 }
 			],
 			"selectedDay": 1,
-			"deployedDay": null
+			"deployedDay": null,
+			"orderIndex": 1
 		},
 		{
 			"title": "S11",
@@ -181,7 +192,9 @@
 				{ "effortType": "Analysis", "estimate": 1 },
 				{ "effortType": "Development", "estimate": 2 },
 				{ "effortType": "Testing", "estimate": 3 }
-			]
+			],
+			"orderIndex": 0
+
 		},
 		{
 			"title": "S12",
@@ -192,7 +205,8 @@
 				{ "effortType": "Analysis", "estimate": 2 },
 				{ "effortType": "Development", "estimate": 4 },
 				{ "effortType": "Testing", "estimate": 5 }
-			]
+			],
+			"orderIndex": 1
 		},
 		{
 			"title": "S13",
@@ -203,7 +217,8 @@
 				{ "effortType": "Analysis", "estimate": 3 },
 				{ "effortType": "Development", "estimate": 6 },
 				{ "effortType": "Testing", "estimate": 1 }
-			]
+			],
+			"orderIndex": 2
 		},
 		{
 			"title": "S14",
@@ -214,7 +229,8 @@
 				{ "effortType": "Analysis", "estimate": 5 },
 				{ "effortType": "Development", "estimate": 1 },
 				{ "effortType": "Testing", "estimate": 2 }
-			]
+			],
+			"orderIndex": 3
 		},
 		{
 			"title": "S15",
@@ -225,7 +241,8 @@
 				{ "effortType": "Analysis", "estimate": 4 },
 				{ "effortType": "Development", "estimate": 4 },
 				{ "effortType": "Testing", "estimate": 4 }
-			]
+			],
+			"orderIndex": 4
 		},
 		{
 			"title": "S16",
@@ -236,7 +253,8 @@
 				{ "effortType": "Analysis", "estimate": 3 },
 				{ "effortType": "Development", "estimate": 2 },
 				{ "effortType": "Testing", "estimate": 2 }
-			]
+			],
+			"orderIndex": 5
 		},
 		{
 			"title": "S17",
@@ -247,7 +265,8 @@
 				{ "effortType": "Analysis", "estimate": 6 },
 				{ "effortType": "Development", "estimate": 2 },
 				{ "effortType": "Testing", "estimate": 3 }
-			]
+			],
+			"orderIndex": 6
 		},
 		{
 			"title": "S18",
@@ -258,7 +277,8 @@
 				{ "effortType": "Analysis", "estimate": 2 },
 				{ "effortType": "Development", "estimate": 3 },
 				{ "effortType": "Testing", "estimate": 1 }
-			]
+			],
+			"orderIndex": 7
 		},
 		{
 			"title": "I1",
@@ -269,7 +289,8 @@
 				{ "effortType": "Analysis", "estimate": 2 },
 				{ "effortType": "Development", "estimate": 2 },
 				{ "effortType": "Testing", "estimate": 2 }
-			]
+			],
+			"orderIndex": 8
 		},
 		{
 			"title": "I2",
@@ -280,7 +301,8 @@
 				{ "effortType": "Analysis", "estimate": 1 },
 				{ "effortType": "Development", "estimate": 3 },
 				{ "effortType": "Testing", "estimate": 2 }
-			]
+			],
+			"orderIndex": 9
 		},
 		{
 			"title": "I3",
@@ -291,7 +313,8 @@
 				{ "effortType": "Analysis", "estimate": 3 },
 				{ "effortType": "Development", "estimate": 1 },
 				{ "effortType": "Testing", "estimate": 1 }
-			]
+			],
+			"orderIndex": 10
 		},
 		{
 			"title": "F1",
@@ -302,7 +325,8 @@
 				{ "effortType": "Analysis", "estimate": 5 },
 				{ "effortType": "Development", "estimate": 5 },
 				{ "effortType": "Testing", "estimate": 5 }
-			]
+			],
+			"orderIndex": 11
 		},
 		{
 			"title": "F2",
@@ -313,7 +337,8 @@
 				{ "effortType": "Analysis", "estimate": 4 },
 				{ "effortType": "Development", "estimate": 6 },
 				{ "effortType": "Testing", "estimate": 4 }
-			]
+			],
+			"orderIndex": 12
 		}
 	]
 }

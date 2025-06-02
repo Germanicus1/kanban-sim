@@ -5,6 +5,29 @@ definitions:
       day:
         type: integer
     type: object
+  models.Column:
+    properties:
+      id:
+        type: string
+      orderIndex:
+        type: integer
+      parentId:
+        description: nil for top-level
+        type: string
+      subColumns:
+        description: built in memory
+        items:
+          $ref: '#/definitions/models.Column'
+        type: array
+      title:
+        type: string
+      type:
+        description: '"active", queue", "done"'
+        type: string
+      wipLimit:
+        description: only set if non-zero
+        type: integer
+    type: object
   models.CreatePlayerRequest:
     properties:
       game_id:
@@ -272,6 +295,45 @@ paths:
       summary: Update game day
       tags:
       - games
+  /games/{id}/columns:
+    get:
+      description: Returns the list of columns (including subcolumns) belonging to
+        the specified game UUID.
+      parameters:
+      - description: Game ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of columns
+          schema:
+            items:
+              $ref: '#/definitions/models.Column'
+            type: array
+        "400":
+          description: Invalid or missing game ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Game not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List columns by game ID
+      tags:
+      - columns
   /players:
     delete:
       consumes:

@@ -23,6 +23,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Germanicus1/kanban-sim/backend/internal/columns"
 	"github.com/Germanicus1/kanban-sim/backend/internal/database"
 	"github.com/Germanicus1/kanban-sim/backend/internal/games"
 	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
@@ -74,13 +75,18 @@ func main() {
 	// Setup services and handlers
 	gameRepo := games.NewSQLRepo(db)
 	playerRepo := players.NewSQLRepo(db)
+	columnsRepo := columns.NewSQLRepo(db)
+
 	gameSvc := games.NewService(gameRepo)
 	playerSvc := players.NewService(playerRepo)
+	columnSvc := columns.NewService(columnsRepo)
 
 	gh := handlers.NewGameHandler(gameSvc)
 	ah := handlers.NewAppHandler()
 	ph := handlers.NewPlayerHandler(playerSvc)
-	router := server.NewRouter(ah, gh, ph)
+	ch := handlers.NewColumnHandler(columnSvc)
+
+	router := server.NewRouter(ah, gh, ph, ch)
 
 	// Configure HTTP server with timeouts
 	srv := &http.Server{

@@ -100,7 +100,7 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	for _, c := range cfg.Cards {
 		cardID := uuid.New()
-		colID, ok := columnIDs[c.ColumnTitle]
+		colID, ok := columnIDs[c.Title]
 		if !ok {
 			response.RespondWithError(w, http.StatusInternalServerError, "unknown column "+colID.String())
 			return

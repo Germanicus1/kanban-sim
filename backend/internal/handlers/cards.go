@@ -7,28 +7,30 @@ import (
 	"net/http"
 
 	"github.com/Germanicus1/kanban-sim/backend/internal/database"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
 	"github.com/Germanicus1/kanban-sim/backend/internal/response"
 	internal "github.com/Germanicus1/kanban-sim/backend/utils"
 	"github.com/google/uuid"
 )
 
-type Card struct {
-	ID             uuid.UUID `json:"id"`
-	GameID         uuid.UUID `json:"game_id"`
-	Title          string    `json:"title"`
-	CardColumn     string    `json:"card_column"`
-	ClassOfService string    `json:"class_of_service,omitempty"`
-	ValueEstimate  string    `json:"value_estimate,omitempty"`
-	EffortAnalysis int       `json:"effort_analysis,omitempty"`
-	EffortDev      int       `json:"effort_development,omitempty"`
-	EffortTest     int       `json:"effort_test,omitempty"`
-	SelectedDay    int       `json:"selected_day,omitempty"`
-	DeployedDay    int       `json:"deployed_day,omitempty"`
-}
+var card models.Card
+
+// type Card struct {
+// 	ID             uuid.UUID `json:"id"`
+// 	GameID         uuid.UUID `json:"game_id"`
+// 	Title          string    `json:"title"`
+// 	CardColumn     string    `json:"card_column"`
+// 	ClassOfService string    `json:"class_of_service,omitempty"`
+// 	ValueEstimate  string    `json:"value_estimate,omitempty"`
+// 	EffortAnalysis int       `json:"effort_analysis,omitempty"`
+// 	EffortDev      int       `json:"effort_development,omitempty"`
+// 	EffortTest     int       `json:"effort_test,omitempty"`
+// 	SelectedDay    int       `json:"selected_day,omitempty"`
+// 	DeployedDay    int       `json:"deployed_day,omitempty"`
+// }
 
 // CreateCard creates a new card
 func CreateCard(w http.ResponseWriter, r *http.Request) {
-	var card Card
 	if err := json.NewDecoder(r.Body).Decode(&card); err != nil {
 		response.RespondWithError(w, http.StatusBadRequest, response.ErrValidationFailed)
 		return
@@ -40,10 +42,9 @@ func CreateCard(w http.ResponseWriter, r *http.Request) {
 
 	const q = `
         INSERT INTO cards (
-            game_id, title, card_column,
+            game_id, column_id, title,
             class_of_service, value_estimate,
-            effort_analysis, effort_development, effort_test,
-            selected_day, deployed_day
+            selected_day, deployed_day, order_index
         ) VALUES (
             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10
         ) RETURNING id
@@ -51,15 +52,13 @@ func CreateCard(w http.ResponseWriter, r *http.Request) {
 	if err := database.DB.QueryRow(
 		q,
 		card.GameID,
+		card.ColumnID,
 		card.Title,
-		card.CardColumn,
 		card.ClassOfService,
 		card.ValueEstimate,
-		card.EffortAnalysis,
-		card.EffortDev,
-		card.EffortTest,
 		card.SelectedDay,
 		card.DeployedDay,
+		card.OrderIndex,
 	).Scan(&card.ID); err != nil {
 		status, code := response.MapPostgresError(err)
 		response.RespondWithError(w, status, code)
@@ -83,12 +82,11 @@ func GetCard(w http.ResponseWriter, r *http.Request) {
           FROM cards
          WHERE id = $1
     `
-	var card Card
 	err = database.DB.QueryRow(q, id).Scan(
 		&card.ID,
 		&card.GameID,
 		&card.Title,
-		&card.CardColumn,
+		&card.ColumnID,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -112,7 +110,6 @@ func UpdateCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var card Card
 	if err := json.NewDecoder(r.Body).Decode(&card); err != nil {
 		response.RespondWithError(w, http.StatusBadRequest, response.ErrValidationFailed)
 		return
@@ -134,12 +131,9 @@ func UpdateCard(w http.ResponseWriter, r *http.Request) {
 	res, err := database.DB.Exec(
 		q,
 		card.Title,
-		card.CardColumn,
+		card.ColumnID,
 		card.ClassOfService,
 		card.ValueEstimate,
-		card.EffortAnalysis,
-		card.EffortDev,
-		card.EffortTest,
 		card.SelectedDay,
 		card.DeployedDay,
 		id,

@@ -12,8 +12,9 @@ func TestNewRouter_Patterns(t *testing.T) {
 	ah := handlers.NewAppHandler()
 	gh := handlers.NewGameHandler(nil)
 	ph := handlers.NewPlayerHandler(nil)
+	ch := handlers.NewColumnHandler(nil)
 
-	router := NewRouter(ah, gh, ph)
+	router := NewRouter(ah, gh, ph, ch)
 
 	mux, ok := router.(*http.ServeMux)
 	if !ok {
@@ -40,6 +41,7 @@ func TestNewRouter_Patterns(t *testing.T) {
 		{"GetPlayerByID", "GET", "/players/123", "GET /players/{id}"},
 		{"UpdatePlayer", "PATCH", "/players/123", "PATCH /players/{id}"},
 		{"DeletePlayer", "DELETE", "/players", "DELETE /players"},
+		{"GetColumnsByGameID", "GET", "/games/123/columns", "GET /games/{id}/columns"},
 		// {"ListPlayers", "GET", "/players", "GET /players"},
 	}
 

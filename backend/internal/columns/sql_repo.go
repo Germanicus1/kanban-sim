@@ -13,11 +13,10 @@ type sqlRepo struct {
 }
 
 func (r sqlRepo) GetColumnsByGameID(ctx context.Context, gameID uuid.UUID) ([]models.Column, error) {
+	query := `SELECT id, title, wip_limit, col_type, parent_id, order_index FROM columns WHERE game_id = $1 ORDER BY parent_id, order_index`
+
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT id, title, wip_limit, col_type, parent_id, order_index
-           FROM columns
-          WHERE game_id = $1
-       ORDER BY parent_id, order_index`,
+		query,
 		gameID, // pass UUID directly, not a string
 	)
 	cols := make([]models.Column, 0) // non‐nil from the start

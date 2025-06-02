@@ -294,6 +294,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/games/{id}/columns": {
+            "get": {
+                "description": "Returns the list of columns (including subcolumns) belonging to the specified game UUID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "columns"
+                ],
+                "summary": "List columns by game ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Game ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of columns",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Column"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or missing game ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Game not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "Method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/players": {
             "post": {
                 "description": "## CreatePlayer handles the creation of a new player in the game.\n\nIt expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a \"method not allowed\" error. If the payload is invalid or fails validation, it responds with a \"bad request\" error. On successful creation, it returns the created player data. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
@@ -512,6 +569,39 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "day": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Column": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "orderIndex": {
+                    "type": "integer"
+                },
+                "parentId": {
+                    "description": "nil for top-level",
+                    "type": "string"
+                },
+                "subColumns": {
+                    "description": "built in memory",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Column"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"active\", queue\", \"done\"",
+                    "type": "string"
+                },
+                "wipLimit": {
+                    "description": "only set if non-zero",
                     "type": "integer"
                 }
             }

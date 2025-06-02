@@ -72,7 +72,6 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		for i, cc := range cfg.Cards {
 
 			gameCfg.Cards[i] = models.Card{
-				ColumnTitle:    cc.ColumnTitle,
 				Title:          cc.Title,
 				ClassOfService: cc.ClassOfService,
 				ValueEstimate:  cc.ValueEstimate,

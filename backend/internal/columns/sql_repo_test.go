@@ -14,6 +14,8 @@ import (
 
 func TestSQLRepo_GetColumnsByGameID(t *testing.T) {
 	const query = `SELECT id, title, wip_limit, col_type, parent_id, order_index FROM columns WHERE game_id = $1 ORDER BY parent_id, order_index`
+	gameID := uuid.New()
+	colID := uuid.New()
 
 	tests := []struct {
 		name      string
@@ -23,7 +25,7 @@ func TestSQLRepo_GetColumnsByGameID(t *testing.T) {
 	}{
 		{
 			name:   "empty game",
-			gameID: uuid.New(),
+			gameID: gameID,
 			setupMock: func(mock sqlmock.Sqlmock, gameID uuid.UUID) {
 				// Return zero rows for an “empty game”
 				rows := sqlmock.NewRows([]string{
@@ -35,21 +37,32 @@ func TestSQLRepo_GetColumnsByGameID(t *testing.T) {
 			},
 			expected: []models.Column{},
 		},
-		// {
-		// 	name:   "single column",
-		// 	gameID: uuid.New(),
-		// 	expected: []models.Column{
-		// 		{
-		// 			ID:         uuid.New(),
-		// 			Title:      "To Do",
-		// 			OrderIndex: 0,
-		// 			WIPLimit:   nil,
-		// 			Type:       "active",
-		// 			SubColumns: nil,
-		// 			ParentID:   nil,
-		// 		},
-		// 	},
-		// },
+		{
+			name:   "single column",
+			gameID: gameID,
+			setupMock: func(mock sqlmock.Sqlmock, gameID uuid.UUID) {
+				rows := sqlmock.NewRows([]string{
+					"id", "title", "wip_limit", "col_type", "parent_id", "order_index",
+				}).AddRow(
+					colID, "To Do", nil, "active", nil, 0,
+				)
+
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(gameID).
+					WillReturnRows(rows)
+			},
+			expected: []models.Column{
+				{
+					ID:         colID,
+					Title:      "To Do",
+					OrderIndex: 0,
+					WIPLimit:   nil,
+					Type:       "active",
+					SubColumns: nil,
+					ParentID:   nil,
+				},
+			},
+		},
 		// {
 		// 	name:   "multiple columns",
 		// 	gameID: uuid.New(),
