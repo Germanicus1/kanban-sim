@@ -1,18 +1,18 @@
 ---
-import PingTest from '../components/PingTest.jsx';
+import '../styles/global.css';
+import Hello from '../components/Hello.jsx';
 ---
 
 <html lang="en">
 	<head>
-		<script src="http://localhost:8097"></script>
-		<meta charset="UTF-8" />
-		<title>Kanban Sim MVP</title>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
 	</head>
-	<body class="min-h-screen bg-gray-100 text-gray-900 p-8">
-		<h1 class="text-3xl font-bold mb-4">Welcome to Kanban Sim MVP</h1>
-		<p class="mb-4">The server backend should respond at <code>/ping</code>.</p>
-
-		<!-- This must be here -->
-		<PingTest client:load />
+	<body>
+		<h1 class="text-3xl font-bold underline">Astro</h1>
+		<Hello name="Developer" client:load />
 	</body>
 </html>
