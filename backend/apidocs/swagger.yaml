@@ -14,6 +14,12 @@ definitions:
         example: John
         type: string
     type: object
+  models.DeletePlayerRequest:
+    properties:
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
   models.Game:
     properties:
       created_at:
@@ -122,6 +128,44 @@ paths:
       summary: Create a new game
       tags:
       - games
+  /games/{game_id}/players:
+    get:
+      description: Returns a list of players belonging to the given game UUID.
+      parameters:
+      - description: Game ID
+        format: uuid
+        in: path
+        name: game_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of players
+          schema:
+            items:
+              $ref: '#/definitions/models.Player'
+            type: array
+        "400":
+          description: Invalid or missing game ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Players not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List all players by game ID
+      tags:
+      - players
   /games/{id}:
     delete:
       description: Removes the game record identified by the given UUID.
@@ -229,13 +273,50 @@ paths:
       tags:
       - games
   /players:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the player identified by the given UUID.
+      parameters:
+      - description: Player deletion payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeletePlayerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Player deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid or missing player ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Player not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "405":
+          description: Method not allowed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Delete a player
+      tags:
+      - players
     patch:
       consumes:
       - application/json
       description: |
-        **UpdatePlayer handles HTTP PUT requests to update a player's information.**
+        ## UpdatePlayer handles HTTP PUT requests to update a player's information
 
-        It validates the request method, decodes the request payload, and ensures the payload contains valid player data. If the data is valid, it calls the service player to update the player in the database. In case of errors, it responds with appropriate HTTP status codes and error messages.
+        It validates the request method, decodes the request payload, and ensures the payload contains valid player data. If the data is valid, it calls the service layer to update the player in the database. In case of errors, it responds with appropriate HTTP status codes and error messages.
       parameters:
       - description: Player update payload
         in: body
@@ -271,7 +352,7 @@ paths:
       description: |
         ## CreatePlayer handles the creation of a new player in the game.
 
-        It expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a "method not allowed" error. If the payload is invalid or fails validation, it responds with a "bad request" error. On successful creation, it returns the created player data. If an error occurs during player creation, it maps the error to an appropriate HTTP status and error code.
+        It expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a "method not allowed" error. If the payload is invalid or fails validation, it responds with a "bad request" error. On successful creation, it returns the created player data. In case of errors, it responds with appropriate HTTP status codes and error messages.
       parameters:
       - description: Player creation payload
         in: body

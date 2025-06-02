@@ -105,17 +105,24 @@ func (r *sqlRepo) UpdatePlayer(ctx context.Context, id uuid.UUID, name string) e
 
 func (r *sqlRepo) DeletePlayer(ctx context.Context, id uuid.UUID) error {
 	const q = `DELETE FROM players WHERE id = $1`
-	if _, err := r.db.ExecContext(ctx, q, id); err != nil {
-		if err == sql.ErrNoRows {
-			return ErrNotFound
-		}
+
+	res, err := r.db.ExecContext(ctx, q, id)
+	if err != nil {
 		return fmt.Errorf("delete player: %w", err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("delete player (rows affected): %w", err)
+	}
+	if n == 0 {
+		return ErrNotFound
 	}
 
 	return nil
 }
 
-func (r *sqlRepo) ListPlayers(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error) {
+func (r *sqlRepo) ListPlayersByGameID(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error) {
 	const q = `SELECT id, name, game_id FROM players WHERE game_id = $1`
 	rows, err := r.db.QueryContext(ctx, q, gameID)
 	if err != nil {
@@ -123,13 +130,14 @@ func (r *sqlRepo) ListPlayers(ctx context.Context, gameID uuid.UUID) ([]*models.
 	}
 	defer rows.Close()
 
-	var players []*models.Player
+	players := make([]*models.Player, 0)
+
 	for rows.Next() {
-		var player models.Player
-		if err := rows.Scan(&player.ID, &player.Name, &player.GameID); err != nil {
+		var p models.Player
+		if err := rows.Scan(&p.ID, &p.Name, &p.GameID); err != nil {
 			return nil, fmt.Errorf("scan player: %w", err)
 		}
-		players = append(players, &player)
+		players = append(players, &p)
 	}
 
 	if err := rows.Err(); err != nil {

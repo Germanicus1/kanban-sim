@@ -10,5 +10,5 @@ type PlayerRepository interface {
 	GetPlayer(id uuid.UUID) (*models.Player, error)
 	UpdatePlayer(id uuid.UUID, name string) (*models.Player, error)
 	DeletePlayer(id uuid.UUID) error
-	ListPlayers() ([]*models.Player, error)
+	ListPlayersByGameID() ([]*models.Player, error)
 }

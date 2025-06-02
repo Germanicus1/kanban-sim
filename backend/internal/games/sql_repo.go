@@ -59,12 +59,30 @@ func (r *sqlRepo) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.
 	// 4) seed columns & subcolumns, grabbing each new ID
 	columnIDs := make(map[string]uuid.UUID, len(cfg.Columns)*2)
 	for _, col := range cfg.Columns {
+		var wipLimit int
+		if col.WIPLimit != nil {
+			wipLimit = *col.WIPLimit
+		} else {
+			wipLimit = 0
+		}
+
+		//    If col.Type is empty, default to "queue".
+		cType := col.Type
+		if cType == "" {
+			cType = "queue"
+		}
+
 		var mainID uuid.UUID
 		if err := tx.QueryRowContext(ctx,
-			`INSERT INTO columns (game_id, title, parent_id, order_index)
-                 VALUES ($1, $2, NULL, $3)
-             RETURNING id`,
-			gameID, col.Title, col.OrderIndex,
+			`INSERT INTO columns
+            (game_id, title, parent_id, order_index, wip_limit, col_type)
+         VALUES ($1, $2, NULL, $3, $4, $5)
+         RETURNING id`,
+			gameID,
+			col.Title,
+			col.OrderIndex,
+			wipLimit,
+			cType,
 		).Scan(&mainID); err != nil {
 			tx.Rollback()
 			return uuid.Nil, fmt.Errorf("insert column %q: %w", col.Title, err)
@@ -72,12 +90,32 @@ func (r *sqlRepo) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.
 		columnIDs[col.Title] = mainID
 
 		for _, sub := range col.SubColumns {
+			var subWIPLimit int
+			if sub.WIPLimit != nil {
+				subWIPLimit = *sub.WIPLimit
+			} else {
+				subWIPLimit = 0
+			}
+
+			var subType string
+			if sub.Type != "" {
+				subType = sub.Type
+			} else {
+				subType = "queue"
+			}
+
 			var subID uuid.UUID
 			if err := tx.QueryRowContext(ctx,
-				`INSERT INTO columns (game_id, title, parent_id, order_index)
-                     VALUES ($1, $2, $3, $4)
-                 RETURNING id`,
-				gameID, sub.Title, mainID, sub.OrderIndex,
+				`INSERT INTO columns
+                (game_id, title, parent_id, order_index, wip_limit, col_type)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING id`,
+				gameID,
+				sub.Title,
+				mainID,
+				sub.OrderIndex,
+				subWIPLimit,
+				subType,
 			).Scan(&subID); err != nil {
 				tx.Rollback()
 				return uuid.Nil, fmt.Errorf("insert subcolumn %q under %q: %w",

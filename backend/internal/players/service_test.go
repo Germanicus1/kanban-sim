@@ -37,7 +37,7 @@ func (m *mockRepo) DeletePlayer(ctx context.Context, id uuid.UUID) error {
 	m.gotDeleteID = id
 	return m.wantDeleteErr
 }
-func (m *mockRepo) ListPlayers(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error) {
+func (m *mockRepo) ListPlayersByGameID(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error) {
 	if m.wantErr != nil {
 		return nil, m.wantErr
 	}
@@ -109,13 +109,13 @@ func TestService_DeletePlayer(t *testing.T) {
 	}
 }
 
-func TestService_ListPlayers(t *testing.T) {
+func TestService_ListPlayersByGameID(t *testing.T) {
 	wantID := uuid.New()
 	wantPlayer := models.Player{ID: wantID, Name: "Test Player"}
 	mr := &mockRepo{wantPlayer: wantPlayer}
 	svc := players.NewService(mr)
 
-	gotPlayers, err := svc.ListPlayers(context.Background(), wantID)
+	gotPlayers, err := svc.ListPlayersByGameID(context.Background(), wantID)
 	if err != nil {
 		t.Fatalf("ListPlayers returned error: %v", err)
 	}

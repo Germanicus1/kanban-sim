@@ -336,3 +336,144 @@ func TestSQLRepo_UpdatePlayer(t *testing.T) {
 		})
 	}
 }
+
+func TestSQLRepo_DeletePlayer(t *testing.T) {
+	const deleteQuery = `DELETE FROM players WHERE id = $1`
+	tests := []struct {
+		name           string
+		setupMock      func(mock sqlmock.Sqlmock, id uuid.UUID)
+		wantErrContain string
+	}{
+		{
+			name: "ExecContext error",
+			setupMock: func(mock sqlmock.Sqlmock, id uuid.UUID) {
+				mock.ExpectExec(regexp.QuoteMeta(deleteQuery)).
+					WithArgs(id).
+					WillReturnError(errors.New("db down"))
+			},
+			wantErrContain: "delete player",
+		},
+		{
+			name: "No rows affected",
+			setupMock: func(mock sqlmock.Sqlmock, id uuid.UUID) {
+				mock.ExpectExec(regexp.QuoteMeta(deleteQuery)).
+					WithArgs(id).
+					WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			wantErrContain: "player not found",
+		},
+		{
+			name: "Success",
+			setupMock: func(mock sqlmock.Sqlmock, id uuid.UUID) {
+				mock.ExpectExec(regexp.QuoteMeta(deleteQuery)).
+					WithArgs(id).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			// wantErrContain empty means success path
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+
+			repo := players.NewSQLRepo(db)
+			id := uuid.New()
+
+			tc.setupMock(mock, id)
+
+			err = repo.DeletePlayer(context.Background(), id)
+
+			if tc.wantErrContain != "" {
+				require.ErrorContains(t, err, tc.wantErrContain)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
+func TestSQLRepo_ListPlayerByGameID(t *testing.T) {
+	const query = `SELECT id, name, game_id FROM players WHERE game_id = $1`
+	tests := []struct {
+		name           string
+		setupMock      func(mock sqlmock.Sqlmock, gameID uuid.UUID)
+		wantErrContain string
+		wantPlayers    []*models.Player
+	}{
+		{
+			name: "QueryContext error",
+			setupMock: func(mock sqlmock.Sqlmock, gameID uuid.UUID) {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(gameID).
+					WillReturnError(errors.New("db down"))
+			},
+			wantErrContain: "query players",
+		},
+		{
+			name: "No rows returned",
+			setupMock: func(mock sqlmock.Sqlmock, gameID uuid.UUID) {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(gameID).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "game_id"}))
+			},
+			wantPlayers: []*models.Player{},
+		},
+		{
+			name: "Multiple players returned",
+			setupMock: func(mock sqlmock.Sqlmock, gameID uuid.UUID) {
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(gameID).
+					WillReturnRows(
+						sqlmock.NewRows([]string{"id", "name", "game_id"}).
+							AddRow(uuid.New(), "Alice", gameID).
+							AddRow(uuid.New(), "Bob", gameID),
+					)
+			},
+			wantPlayers: []*models.Player{
+				{ID: uuid.Nil, Name: "", GameID: uuid.Nil}, // overwritten in assertion
+				{ID: uuid.Nil, Name: "", GameID: uuid.Nil}, // overwritten
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+
+			repo := players.NewSQLRepo(db)
+			gameID := uuid.New()
+			tc.setupMock(mock, gameID)
+
+			gotPlayers, err := repo.ListPlayersByGameID(context.Background(), gameID)
+
+			if tc.wantErrContain != "" {
+				require.ErrorContains(t, err, tc.wantErrContain)
+				require.Nil(t, gotPlayers)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, gotPlayers)
+			require.Len(t, gotPlayers, len(tc.wantPlayers))
+			for i, player := range gotPlayers {
+				require.NotEqual(t, uuid.Nil, player.ID)
+				require.NotEmpty(t, player.Name)
+				require.Equal(t, gameID, player.GameID)
+
+				// Overwrite with expected values
+				if len(tc.wantPlayers) > i {
+					tc.wantPlayers[i].ID = player.ID
+					tc.wantPlayers[i].Name = player.Name
+					tc.wantPlayers[i].GameID = player.GameID
+				}
+			}
+			require.Equal(t, tc.wantPlayers, gotPlayers)
+			require.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}

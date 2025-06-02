@@ -73,6 +73,63 @@
                 }
             }
         },
+        "/games/{game_id}/players": {
+            "get": {
+                "description": "Returns a list of players belonging to the given game UUID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "List all players by game ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Game ID",
+                        "name": "game_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of players",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Player"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or missing game ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Players not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "Method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/games/{id}": {
             "get": {
                 "description": "Returns the full game record for the given UUID.",
@@ -233,7 +290,7 @@
         },
         "/players": {
             "post": {
-                "description": "## CreatePlayer handles the creation of a new player in the game.\n\nIt expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a \"method not allowed\" error. If the payload is invalid or fails validation, it responds with a \"bad request\" error. On successful creation, it returns the created player data. If an error occurs during player creation, it maps the error to an appropriate HTTP status and error code.\n",
+                "description": "## CreatePlayer handles the creation of a new player in the game.\n\nIt expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a \"method not allowed\" error. If the payload is invalid or fails validation, it responds with a \"bad request\" error. On successful creation, it returns the created player data. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
                 "consumes": [
                     "application/json"
                 ],
@@ -282,8 +339,64 @@
                     }
                 }
             },
+            "delete": {
+                "description": "Deletes the player identified by the given UUID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Delete a player",
+                "parameters": [
+                    {
+                        "description": "Player deletion payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeletePlayerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Player deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or missing player ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Player not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "Method not allowed",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "patch": {
-                "description": "**UpdatePlayer handles HTTP PUT requests to update a player's information.**\n\nIt validates the request method, decodes the request payload, and ensures the payload contains valid player data. If the data is valid, it calls the service player to update the player in the database. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
+                "description": "## UpdatePlayer handles HTTP PUT requests to update a player's information\n\nIt validates the request method, decodes the request payload, and ensures the payload contains valid player data. If the data is valid, it calls the service layer to update the player in the database. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
                 "consumes": [
                     "application/json"
                 ],
@@ -407,6 +520,15 @@
                 "name": {
                     "type": "string",
                     "example": "John"
+                }
+            }
+        },
+        "models.DeletePlayerRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
                 }
             }
         },

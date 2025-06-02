@@ -6,15 +6,25 @@
 	],
 
 	"columns": [
-		{ "title": "Options", "orderIndex": 0 },
-		{ "title": "Selected", "orderIndex": 1, "wipLimit": 5 },
+		{
+			"title": "Options",
+			"type": "queue",
+			"orderIndex": 0
+		},
+		{
+			"title": "Selected",
+			"type": "queue",
+			"wipLimit": 5,
+			"orderIndex": 1
+		},
 		{
 			"title": "Analysis",
+			"type": "active",
 			"orderIndex": 2,
 			"wipLimit": 3,
 			"subcolumns": [
-				{ "title": "In Progress", "orderIndex": 0 },
-				{ "title": "Done", "orderIndex": 1 }
+				{ "title": "In Progress", "type": "active","orderIndex": 0 },
+				{ "title": "Done","type": "queue", "orderIndex": 1 }
 			]
 		},
 		{
@@ -22,13 +32,13 @@
 			"orderIndex": 3,
 			"wipLimit": 3,
 			"subcolumns": [
-				{ "title": "In Progress", "orderIndex": 0 },
-				{ "title": "Done", "orderIndex": 1 }
+				{ "title": "In Progress", "type": "active","orderIndex": 0 },
+				{ "title": "Done","type": "queue", "orderIndex": 1 }
 			]
 		},
-		{ "title": "Test", "orderIndex": 4, "wipLimit": 3 },
-		{ "title": "Ready to Deploy", "orderIndex": 5 },
-		{ "title": "Deployed", "orderIndex": 6 }
+		{ "title": "Test", "type": "active", "wiplimit": 3, "orderIndex": 4 },
+		{ "title": "Ready to Deploy", "type": "queue", "orderIndex": 5 },
+		{ "title": "Deployed", "type": "done", "orderIndex": 6 }
 	],
 
 	"cards": [

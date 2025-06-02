@@ -13,7 +13,7 @@ type Repository interface {
 	GetPlayerByID(ctx context.Context, id uuid.UUID) (*models.Player, error)
 	UpdatePlayer(ctx context.Context, id uuid.UUID, name string) error
 	DeletePlayer(ctx context.Context, id uuid.UUID) error
-	ListPlayers(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error)
+	ListPlayersByGameID(ctx context.Context, gameID uuid.UUID) ([]*models.Player, error)
 }
 
 // sqlRepo implements the Repository interface using a SQL database.

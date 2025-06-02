@@ -39,7 +39,7 @@ func TestNewRouter_Patterns(t *testing.T) {
 		{"CreatePlayer", "POST", "/players", "POST /players"},
 		{"GetPlayerByID", "GET", "/players/123", "GET /players/{id}"},
 		{"UpdatePlayer", "PATCH", "/players/123", "PATCH /players/{id}"},
-		// {"DeletePlayer", "DELETE", "/players/123", "DELETE /players/{id}"},
+		{"DeletePlayer", "DELETE", "/players", "DELETE /players"},
 		// {"ListPlayers", "GET", "/players", "GET /players"},
 	}
 

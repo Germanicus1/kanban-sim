@@ -148,3 +148,87 @@ func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 
 	response.RespondWithData(w, "")
 }
+
+// DeletePlayer removes a player by UUID.
+// @Summary      Delete a player
+// @Description  Deletes the player identified by the given UUID.
+// @Tags         players
+// @Accept       json
+// @Produce      json
+// @Param        payload  body      models.DeletePlayerRequest  true  "Player deletion payload"
+// @Success      200      {string}  string                      "Player deleted successfully"
+// @Failure      400      {object}  response.ErrorResponse      "Invalid or missing player ID"
+// @Failure      404      {object}  response.ErrorResponse      "Player not found"
+// @Failure      405      {object}  response.ErrorResponse      "Method not allowed"
+// @Failure      500      {object}  response.ErrorResponse      "Internal server error"
+// @Router       /players [delete]
+func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		w.Header().Set("Allow", http.MethodDelete)
+		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
+		return
+	}
+
+	var payload models.DeletePlayerRequest
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		response.RespondWithError(w, http.StatusBadRequest, response.ErrValidationFailed)
+		return
+	}
+	if payload.ID == uuid.Nil {
+		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidPlayerID)
+		return
+	}
+	if err := h.Service.DeletePlayer(r.Context(), payload.ID); err != nil {
+		if errors.Is(err, players.ErrNotFound) {
+			response.RespondWithError(w, http.StatusNotFound, response.ErrPlayerNotFound)
+		} else {
+			status, code := response.MapPostgresError(err)
+			response.RespondWithError(w, status, code)
+		}
+		return
+	}
+	response.RespondWithData(w, "Player deleted successfully")
+}
+
+// ListPlayersByGameID retrieves all players for a specific game.
+// @Summary      List all players by game ID
+// @Description  Returns a list of players belonging to the given game UUID.
+// @Tags         players
+// @Produce      json
+// @Param        game_id   path      string           true  "Game ID"  Format(uuid)
+// @Success      200       {array}   models.Player    "List of players"
+// @Failure      400       {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      404       {object}  response.ErrorResponse  "Players not found"
+// @Failure      405       {object}  response.ErrorResponse  "Method not allowed"
+// @Failure      500       {object}  response.ErrorResponse  "Internal server error"
+// @Router       /games/{game_id}/players [get]
+func (h *PlayerHandler) ListPlayersByGameID(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
+		return
+	}
+	gameIDStr := r.PathValue("game_id")
+	if gameIDStr == "" {
+		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidGameID)
+		return
+	}
+	gameID, err := uuid.Parse(gameIDStr)
+	if err != nil {
+		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidGameID)
+		return
+	}
+	players, err := h.Service.ListPlayersByGameID(r.Context(), gameID)
+	if err != nil {
+		if errors.Is(err, errors.New(response.ErrPlayersNotFound)) {
+			response.RespondWithError(w, http.StatusNotFound, response.ErrPlayersNotFound)
+		} else {
+			status, code := response.MapPostgresError(err)
+			response.RespondWithError(w, status, code)
+		}
+		return
+	}
+	response.RespondWithData(w, players)
+}
+
+// ListPlayersByGameID retrieves all players for a specific game.
