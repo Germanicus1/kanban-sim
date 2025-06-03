@@ -7,6 +7,7 @@ type Card struct {
 	ID             uuid.UUID `json:"id"`
 	GameID         uuid.UUID `json:"gameId"`
 	ColumnID       uuid.UUID `json:"columnId"`
+	ColumnTitle    string    `json:"columnTitle"`
 	Title          string    `json:"title"`
 	ClassOfService string    `json:"classOfService,omitempty"`
 	ValueEstimate  string    `json:"valueEstimate,omitempty"`

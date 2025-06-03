@@ -70,9 +70,18 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 		gameCfg.Cards = make([]models.Card, len(cfg.Cards))
 		for i, cc := range cfg.Cards {
+			// 1) Build that card’s list of Efforts:
+			efforts := make([]models.Effort, len(cc.Efforts))
+			for j, ce := range cc.Efforts {
+				efforts[j] = models.Effort{
+					EffortType: ce.EffortType,
+					Estimate:   ce.Estimate,
+				}
+			}
 
 			gameCfg.Cards[i] = models.Card{
 				Title:          cc.Title,
+				ColumnTitle:    cc.ColumnTitle,
 				ClassOfService: cc.ClassOfService,
 				ValueEstimate:  cc.ValueEstimate,
 				SelectedDay:    cc.SelectedDay,

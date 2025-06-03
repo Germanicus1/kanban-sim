@@ -8,6 +8,7 @@ import (
 
 	"github.com/Germanicus1/kanban-sim/backend/internal/config"
 	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
+	"github.com/Germanicus1/kanban-sim/backend/internal/models"
 	"github.com/Germanicus1/kanban-sim/backend/internal/response"
 	"github.com/google/uuid"
 )
@@ -90,7 +91,7 @@ func TestGetBoard_Success(t *testing.T) {
 	}
 
 	// 3) Decode into envelope of map[string][]handlers.Card
-	var boardEnv response.APIResponse[map[string][]handlers.Card]
+	var boardEnv response.APIResponse[map[string][]models.Card]
 	if err := json.NewDecoder(boardRec.Body).Decode(&boardEnv); err != nil {
 		t.Fatalf("decode GetBoard: %v", err)
 	}
@@ -108,9 +109,9 @@ func TestGetBoard_Success(t *testing.T) {
 
 	// 5) Each configured card must live under its ColumnTitle
 	for _, want := range cfg.Cards {
-		group, ok := board[want.ColumnTitle]
+		group, ok := board[want.Title]
 		if !ok {
-			t.Errorf("column %q not found for card %q", want.ColumnTitle, want.Title)
+			t.Errorf("column %q not found for card %q", want.Title, want.Title)
 			continue
 		}
 		found := false
@@ -121,7 +122,7 @@ func TestGetBoard_Success(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Errorf("card %q missing under column %q", want.Title, want.ColumnTitle)
+			t.Errorf("card %q missing under column %q", want.Title, want.Title)
 		}
 	}
 }

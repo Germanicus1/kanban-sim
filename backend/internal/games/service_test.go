@@ -25,10 +25,12 @@ func (m *mockRepo) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid
 	m.gotCfg = cfg
 	return m.wantID, m.wantErr
 }
+
 func (m *mockRepo) GetBoard(ctx context.Context, id uuid.UUID) (models.Board, error) {
 	m.gotGame = id
 	return m.wantBoard, m.wantErr
 }
+
 func (m *mockRepo) GetGameByID(ctx context.Context, id uuid.UUID) (models.Game, error) {
 	return models.Game{}, nil
 }

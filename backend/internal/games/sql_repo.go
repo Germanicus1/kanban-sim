@@ -128,10 +128,10 @@ func (r *sqlRepo) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.
 
 	// 5) seed cards & their efforts, grabbing each new ID
 	for _, c := range cfg.Cards {
-		colID, ok := columnIDs[c.Title]
+		colID, ok := columnIDs[c.ColumnTitle]
 		if !ok {
 			tx.Rollback()
-			return uuid.Nil, fmt.Errorf("unknown column %q", c.Title)
+			return uuid.Nil, fmt.Errorf("unknown column %q", c.ColumnTitle)
 		}
 
 		var cardID uuid.UUID

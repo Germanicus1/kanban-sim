@@ -40,8 +40,6 @@ func TestSQLRepo_CreateGame(t *testing.T) {
 				m.ExpectCommit()
 			},
 		},
-
-		//FIXME: this test is not complete, it needs to insert the card and its efforts
 		{
 			name: "success full config",
 			args: args{

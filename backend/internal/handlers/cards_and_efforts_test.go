@@ -9,32 +9,37 @@ import (
 
 	"github.com/Germanicus1/kanban-sim/backend/internal/config"
 	"github.com/Germanicus1/kanban-sim/backend/internal/database"
+	"github.com/Germanicus1/kanban-sim/backend/internal/games"
 	"github.com/Germanicus1/kanban-sim/backend/internal/handlers"
 	"github.com/google/uuid"
 )
 
 func TestCreateGame_CardsAndEffortsMatchConfig(t *testing.T) {
-	// 1) clean only the tables we’re going to check
-	SetupDB(t, "games")
-	SetupDB(t, "cards")
-	SetupDB(t, "effort_types")
-	SetupDB(t, "efforts")
-	defer TearDownDB()
-
-	// 2) load your board config (with ConfigCard entries)
 	cfg, err := config.LoadBoardConfig()
 	if err != nil {
 		t.Fatalf("LoadBoardConfig: %v", err)
 	}
 
+	// 1) clean only the tables we’re going to check
+	SetupDB(t, "games")
+	SetupDB(t, "columns")
+	SetupDB(t, "cards")
+	SetupDB(t, "effort_types")
+	SetupDB(t, "efforts")
+	defer TearDownDB()
+
+	repo := games.NewSQLRepo(database.DB) // database.DB is the *sql.DB that SetupDB set up
+	svc := games.NewService(repo)         // your real service layer
+	h := handlers.NewGameHandler(svc)     // a handler with a non‐nil Service
+
 	// 3) exercise the handler
 	req := httptest.NewRequest(http.MethodPost, "/games", nil)
 	w := httptest.NewRecorder()
-	handlers.CreateGame(w, req)
+	h.CreateGame(w, req)
 	res := w.Result()
 	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		t.Fatalf("CreateGame returned status %d", res.StatusCode)
+	if res.StatusCode != http.StatusCreated {
+		t.Fatalf("CreateGame returned status %d, want %d", res.StatusCode, http.StatusCreated)
 	}
 
 	// 4) extract the gameID from the JSON envelope
