@@ -13,6 +13,6 @@ type EffortType struct {
 type Effort struct {
 	EffortType string `json:"effortType"`          // e.g. "Development"
 	Estimate   int    `json:"estimate"`            // 1–16 initial
-	Remaining  *int   `json:"remaining,omitempty"` // from DB
-	Actual     *int   `json:"actual,omitempty"`    // from DB
+	Remaining  int    `json:"remaining,omitempty"` // from DB
+	Actual     int    `json:"actual,omitempty"`    // from DB
 }

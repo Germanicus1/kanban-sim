@@ -44,7 +44,7 @@ func TestSQLRepo_GetColumnsByGameID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{
 					"id", "title", "wip_limit", "col_type", "parent_id", "order_index",
 				}).AddRow(
-					colID, "To Do", nil, "active", nil, 0,
+					colID, "To Do", 0, "active", nil, 0,
 				)
 
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
@@ -56,7 +56,7 @@ func TestSQLRepo_GetColumnsByGameID(t *testing.T) {
 					ID:         colID,
 					Title:      "To Do",
 					OrderIndex: 0,
-					WIPLimit:   nil,
+					WIPLimit:   0,
 					Type:       "active",
 					SubColumns: nil,
 					ParentID:   nil,

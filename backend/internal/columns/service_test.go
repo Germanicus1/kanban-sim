@@ -25,7 +25,7 @@ func (m *mockRepo) GetColumnsByGameID(ctx context.Context, gameID uuid.UUID) ([]
 
 func TestService_GetColumnsByGameID(t *testing.T) {
 	wantID := uuid.New()
-	wantColumn := models.Column{ID: wantID, Title: "Test Column", OrderIndex: 0, WIPLimit: nil, Type: "active"}
+	wantColumn := models.Column{ID: wantID, Title: "Test Column", OrderIndex: 0, WIPLimit: 0, Type: "active"}
 	mr := &mockRepo{wantID: wantID, wantColumn: wantColumn}
 	svc := columns.NewService(mr)
 

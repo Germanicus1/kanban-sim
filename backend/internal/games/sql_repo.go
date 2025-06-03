@@ -60,8 +60,8 @@ func (r *sqlRepo) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.
 	columnIDs := make(map[string]uuid.UUID, len(cfg.Columns)*2)
 	for _, col := range cfg.Columns {
 		var wipLimit int
-		if col.WIPLimit != nil {
-			wipLimit = *col.WIPLimit
+		if col.WIPLimit != 0 {
+			wipLimit = col.WIPLimit
 		} else {
 			wipLimit = 0
 		}
@@ -91,8 +91,8 @@ func (r *sqlRepo) CreateGame(ctx context.Context, cfg models.BoardConfig) (uuid.
 
 		for _, sub := range col.SubColumns {
 			var subWIPLimit int
-			if sub.WIPLimit != nil {
-				subWIPLimit = *sub.WIPLimit
+			if sub.WIPLimit != 0 {
+				subWIPLimit = sub.WIPLimit
 			} else {
 				subWIPLimit = 0
 			}
@@ -203,6 +203,9 @@ func (r *sqlRepo) GetBoard(ctx context.Context, gameID uuid.UUID) (models.Board,
 			&c.ParentID,
 			&c.Title,
 			&c.OrderIndex,
+			&c.WIPLimit,
+			&c.Type,
+			&c.SubColumns,
 		); err != nil {
 			return board, fmt.Errorf("scan column: %w", err)
 		}
@@ -306,11 +309,11 @@ func (r *sqlRepo) GetBoard(ctx context.Context, gameID uuid.UUID) (models.Board,
 			}
 			if rem.Valid {
 				v := int(rem.Int64)
-				e.Remaining = &v
+				e.Remaining = v
 			}
 			if act.Valid {
 				v := int(act.Int64)
-				e.Actual = &v
+				e.Actual = v
 			}
 			c.Efforts = append(c.Efforts, e)
 		}

@@ -9,7 +9,7 @@ type Card struct {
 	ColumnID       uuid.UUID `json:"columnId"`
 	Title          string    `json:"title"`
 	ClassOfService string    `json:"classOfService,omitempty"`
-	ValueEstimate  int       `json:"valueEstimate,omitempty"`
+	ValueEstimate  string    `json:"valueEstimate,omitempty"`
 	SelectedDay    int       `json:"selectedDay,omitempty"`
 	DeployedDay    int       `json:"deployedDay,omitempty"`
 	OrderIndex     int       `json:"orderIndex,omitempty"`

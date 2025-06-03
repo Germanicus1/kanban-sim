@@ -32,7 +32,7 @@ func TestGetCardsByGameID(t *testing.T) {
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(gameID).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "game_id", "column_id", "title", "class_of_service", "value_estimate", "selected_day", "deployed_day", "order_index"}).
-						AddRow(cardID, gameID, colID, "Test Card", "Standard", 5, 1, 2, 0))
+						AddRow(cardID, gameID, colID, "Test Card", "Standard", "high", 1, 2, 0))
 			},
 			wantErrContains: "",
 			wantCards: &[]models.Card{
@@ -42,7 +42,7 @@ func TestGetCardsByGameID(t *testing.T) {
 					ColumnID:       colID,
 					Title:          "Test Card",
 					ClassOfService: "Standard",
-					ValueEstimate:  5,
+					ValueEstimate:  "high",
 					SelectedDay:    1,
 					DeployedDay:    2,
 					OrderIndex:     0,

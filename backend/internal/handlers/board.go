@@ -62,9 +62,9 @@ func GetBoard(w http.ResponseWriter, r *http.Request) {
 	// 4) Scan each card into models.Card, then load its efforts
 	for rows.Next() {
 		var (
-			c            models.Card
-			cs           sql.NullString
-			sel, dep, ve sql.NullInt64
+			c        models.Card
+			cs, ve   sql.NullString
+			sel, dep sql.NullInt64
 		)
 		if err := rows.Scan(
 			&c.ID,
@@ -87,7 +87,7 @@ func GetBoard(w http.ResponseWriter, r *http.Request) {
 			c.ClassOfService = cs.String
 		}
 		if ve.Valid {
-			c.ValueEstimate = int(ve.Int64)
+			c.ValueEstimate = ve.String
 		}
 		if sel.Valid {
 			c.SelectedDay = int(sel.Int64)
@@ -120,11 +120,11 @@ func GetBoard(w http.ResponseWriter, r *http.Request) {
 				}
 				if rem.Valid {
 					tmp := int(rem.Int64)
-					e.Remaining = &tmp
+					e.Remaining = tmp
 				}
 				if act.Valid {
 					tmp := int(act.Int64)
-					e.Actual = &tmp
+					e.Actual = tmp
 				}
 				c.Efforts = append(c.Efforts, e)
 			}
