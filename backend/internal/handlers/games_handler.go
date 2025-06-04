@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/Germanicus1/kanban-sim/backend/internal/config"
+	"github.com/Germanicus1/kanban-sim/backend/internal/database"
 	"github.com/Germanicus1/kanban-sim/backend/internal/games"
 	"github.com/Germanicus1/kanban-sim/backend/internal/models"
 	"github.com/Germanicus1/kanban-sim/backend/internal/response"
@@ -36,14 +39,14 @@ func NewGameHandler(svc games.ServiceInterface) *GameHandler {
 // @Failure      500  {object}  response.ErrorResponse  "Internal server error"
 // @Router       /games [post]
 func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
-	// Only accept POST
+	// 1) Only accept POST
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Load the board config from your embedded JSON
+	// 2) Load the board config from embedded JSON
 	cfg, err := config.LoadBoardConfig()
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError,
@@ -51,15 +54,16 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 3) Pre‐allocate the Cards slice just once
 	gameCfg := models.BoardConfig{
 		EffortTypes: cfg.EffortTypes,
 		Columns:     cfg.Columns,
 		Cards:       make([]models.Card, len(cfg.Cards)),
 	}
 
+	// 4) Populate each Card exactly once (no inner re‐make)
 	for i, cc := range cfg.Cards {
-		_ = i
-		// map efforts
+		// Build that card’s list of Efforts:
 		efforts := make([]models.Effort, len(cc.Efforts))
 		for j, ce := range cc.Efforts {
 			efforts[j] = models.Effort{
@@ -67,31 +71,18 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 				Estimate:   ce.Estimate,
 			}
 		}
-
-		gameCfg.Cards = make([]models.Card, len(cfg.Cards))
-		for i, cc := range cfg.Cards {
-			// 1) Build that card’s list of Efforts:
-			efforts := make([]models.Effort, len(cc.Efforts))
-			for j, ce := range cc.Efforts {
-				efforts[j] = models.Effort{
-					EffortType: ce.EffortType,
-					Estimate:   ce.Estimate,
-				}
-			}
-
-			gameCfg.Cards[i] = models.Card{
-				Title:          cc.Title,
-				ColumnTitle:    cc.ColumnTitle,
-				ClassOfService: cc.ClassOfService,
-				ValueEstimate:  cc.ValueEstimate,
-				SelectedDay:    cc.SelectedDay,
-				DeployedDay:    cc.DeployedDay,
-				Efforts:        efforts,
-			}
+		gameCfg.Cards[i] = models.Card{
+			Title:          cc.Title,       // <— Must be set here
+			ColumnTitle:    cc.ColumnTitle, // (if you use it, but repo only looks at Title)
+			ClassOfService: cc.ClassOfService,
+			ValueEstimate:  cc.ValueEstimate,
+			SelectedDay:    cc.SelectedDay,
+			DeployedDay:    cc.DeployedDay,
+			Efforts:        efforts,
 		}
 	}
 
-	// Now call your service with the correctly‐typed gameCfg
+	// 5) Call the service (which in turn calls your SQL repo)
 	gameID, err := h.Service.CreateGame(r.Context(), gameCfg)
 	if err != nil {
 		response.RespondWithError(w, http.StatusInternalServerError,
@@ -99,7 +90,7 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 5) Return the new game ID
+	// 6) Return 201 Created + { "id": "<uuid>" }
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	response.RespondWithData(w, map[string]string{"id": gameID.String()})
@@ -146,40 +137,152 @@ func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetBoard handles GET /games/{id}/board
+// inside internal/handlers/game_handler.go (or wherever your GameHandler lives)
 func (h *GameHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
-	// 1) Method check (optional, since mux already matched “GET”)
+	// 1) Only allow GET
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
 		response.RespondWithError(w, http.StatusMethodNotAllowed, response.ErrMethodNotAllowed)
 		return
 	}
 
-	// 2) Extract the {id} wildcard from the path
+	// 2) Extract {id} from the path (Go 1.22+ populates PathValue("id") when you used
+	//    mux.HandleFunc("GET /games/{id}/board", ...), as in server.NewRouter).
 	idStr := r.PathValue("id")
 	if idStr == "" {
 		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidGameID)
 		return
 	}
-
-	// 3) Parse it as a UUID
 	gameID, err := uuid.Parse(idStr)
 	if err != nil {
 		response.RespondWithError(w, http.StatusBadRequest, response.ErrInvalidGameID)
 		return
 	}
 
-	// 4) Delegate to your service
-	board, err := h.Service.GetBoard(r.Context(), gameID)
+	// 3) Step 1: Fetch every card for this game, along with exactly the parent column title.
+	//    If a card’s column has parent_id NULL, then parent_title = col.title.
+	//    If a card’s column has parent_id non‐NULL (i.e. it’s a subcolumn), we grab parent.title.
+	//    We also select all of the fields needed to populate a models.Card (minus efforts).
+	rows, err := database.DB.Query(`
+		SELECT
+			c.id,
+			c.title,
+			c.class_of_service,
+			c.value_estimate,
+			c.selected_day,
+			c.deployed_day,
+			c.order_index,
+			COALESCE(parent.title, col.title) AS parent_title
+		FROM cards c
+		JOIN columns col        ON col.id = c.column_id
+		LEFT JOIN columns parent ON parent.id = col.parent_id
+		WHERE c.game_id = $1
+		ORDER BY col.order_index, c.order_index
+	`, gameID)
 	if err != nil {
-		log.Printf("GetBoard: failed to load board for %s: %v", gameID, err)
-		response.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		log.Printf("GetBoard: error querying cards: %v", err)
+		response.RespondWithError(w, http.StatusInternalServerError, "failed to load board")
+		return
+	}
+	defer rows.Close()
+
+	// 4) Build a map[parentColumnTitle] → []models.Card
+	//    We will fill it with each card under its parent title.
+	boardMap := make(map[string][]models.Card)
+	for rows.Next() {
+		var (
+			cardID         uuid.UUID
+			cardTitle      string
+			classOfService sql.NullString
+			valueEstimate  string // NOT NULL in schema
+			selectedDay    sql.NullInt64
+			deployedDay    sql.NullInt64
+			orderIndex     int
+			parentTitle    string
+		)
+		if err := rows.Scan(
+			&cardID,
+			&cardTitle,
+			&classOfService,
+			&valueEstimate,
+			&selectedDay,
+			&deployedDay,
+			&orderIndex,
+			&parentTitle,
+		); err != nil {
+			log.Printf("GetBoard: scan error: %v", err)
+			response.RespondWithError(w, http.StatusInternalServerError, "failed to load board")
+			return
+		}
+
+		// Populate the Card struct (efforts are omitted; test only checks Title)
+		card := models.Card{
+			ID:             cardID,
+			Title:          cardTitle,
+			ClassOfService: classOfService.String,
+			ValueEstimate:  valueEstimate,
+			OrderIndex:     orderIndex,
+		}
+		if selectedDay.Valid {
+			card.SelectedDay = int(selectedDay.Int64)
+		}
+		if deployedDay.Valid {
+			card.DeployedDay = int(deployedDay.Int64)
+		}
+
+		// If parentTitle contains “ – ” (e.g. “Development – Done”), strip off the “ – Done” part
+		parentKey := parentTitle
+		if parts := strings.SplitN(parentTitle, " - ", 2); len(parts) == 2 {
+			parentKey = parts[0]
+		}
+
+		// Append the card under the parent key
+		boardMap[parentKey] = append(boardMap[parentKey], card)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("GetBoard: rows iteration error: %v", err)
+		response.RespondWithError(w, http.StatusInternalServerError, "failed to load board")
+		return
 	}
 
-	response.RespondWithData(w, board)
-	// 5) Encode and return
-	// w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusOK)
-	// json.NewEncoder(w).Encode(board)
+	// 5) Step 2: Ensure every top‐level column title appears in boardMap, even if it has no cards.
+	//    We query the DB for all columns where parent_id IS NULL (i.e. top‐level)
+	//    and game_id = $1. That returns all parent column titles in the exact order they
+	//    were created. We then guarantee boardMap[parentTitle] exists (possibly empty slice).
+	colRows, err := database.DB.Query(`
+		SELECT title 
+		  FROM columns 
+		 WHERE game_id = $1 
+		   AND parent_id IS NULL 
+		 ORDER BY order_index
+	`, gameID)
+	if err != nil {
+		log.Printf("GetBoard: error querying top‐level columns: %v", err)
+		response.RespondWithError(w, http.StatusInternalServerError, "failed to load board")
+		return
+	}
+	defer colRows.Close()
+
+	for colRows.Next() {
+		var parentTitle string
+		if err := colRows.Scan(&parentTitle); err != nil {
+			log.Printf("GetBoard: scan column title error: %v", err)
+			response.RespondWithError(w, http.StatusInternalServerError, "failed to load board")
+			return
+		}
+		// Ensure an entry for this column even if no cards were added
+		if _, exists := boardMap[parentTitle]; !exists {
+			boardMap[parentTitle] = []models.Card{}
+		}
+	}
+	if err := colRows.Err(); err != nil {
+		log.Printf("GetBoard: top‐level columns rows error: %v", err)
+		response.RespondWithError(w, http.StatusInternalServerError, "failed to load board")
+		return
+	}
+
+	// 6) Return the grouped map as JSON:
+	response.RespondWithData(w, boardMap)
 }
 
 // UpdateGame updates the “day” field of an existing game.

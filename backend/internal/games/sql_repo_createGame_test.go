@@ -63,11 +63,9 @@ func TestSQLRepo_CreateGame(t *testing.T) {
 					},
 					Cards: []models.Card{
 						{
-							// NOTICE: c.Title must match the key in columnIDs,
-							// which is formed as "<col.Title> - <sub.Title>".
-							// Because we want this card to go under the "Ready" subcolumn
-							// of the column "development", we set:
-							Title:          "development - ready",
+							// ColumnTitle must match "development - ready"
+							Title:          "some-title", // Title is unused by SQLRepo; ColumnTitle is used instead
+							ColumnTitle:    "development - ready",
 							ClassOfService: "standard",
 							ValueEstimate:  "high",
 							SelectedDay:    1,
@@ -83,63 +81,46 @@ func TestSQLRepo_CreateGame(t *testing.T) {
 			want:    gameID,
 			wantErr: false,
 			prepare: func(m sqlmock.Sqlmock, cfg models.BoardConfig) {
-				// We will produce deterministic IDs for each INSERT:
-				//   - colID    = ID of main column “development”
-				//   - inProgID = ID of subcolumn “in progress”
-				//   - readyID  = ID of subcolumn “Ready”
-				developmentID := colID // alias for main “development”
-				inProgID := subColID   // will be returned for “in progress”
-				readyID := subColID    // will be returned for “ready”
+				developmentID := colID // main column “development”
+				inProgID := subColID   // subcolumn “in progress”
+				readyID := subColID    // subcolumn “ready”
 
 				// 1) BEGIN
 				m.ExpectBegin()
 
-				// 2) INSERT INTO games (... RETURNING id)
+				// 2) INSERT INTO games … RETURNING id
 				m.ExpectQuery(`INSERT INTO games .* RETURNING id`).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(gameID))
 
-				// 3) INSERT INTO effort_types (game_id, title, order_index) RETURNING id
+				// 3) INSERT INTO effort_types … RETURNING id
 				m.ExpectQuery(`INSERT INTO effort_types .* RETURNING id`).
 					WithArgs(gameID, "development", 0).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(etID))
 
 				// 4) INSERT main column “development”
-				//    SQL in CreateGame:
-				//      INSERT INTO columns
-				//        (game_id, title, parent_id, order_index, wip_limit, col_type)
-				//      VALUES ($1,$2,NULL,$3,$4,$5)
-				//      RETURNING id
 				m.ExpectQuery(`INSERT INTO columns .* RETURNING id`).
 					WithArgs(
 						gameID,        // $1 → game_id
 						"development", // $2 → title
 						0,             // $3 → order_index
-						3,             // $4 → wip_limit (cfg.WIPLimit was 3)
-						"active",      // $5 → col_type  (cfg.Type was "active")
+						3,             // $4 → wip_limit
+						"active",      // $5 → col_type
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(developmentID))
 
 				// 5) INSERT subcolumn “in progress” under “development”
-				//    SQL:
-				//      INSERT INTO columns
-				//        (game_id, title, parent_id, order_index, wip_limit, col_type)
-				//      VALUES ($1,$2,$3,$4,$5,$6)
 				m.ExpectQuery(`INSERT INTO columns .* RETURNING id`).
 					WithArgs(
 						gameID,        // $1 → game_id
 						"in progress", // $2 → title
 						developmentID, // $3 → parent_id
 						0,             // $4 → order_index
-						0,             // $5 → wip_limit (no WIPLimit on sub → default 0)
-						"queue",       // $6 → col_type (no Type on sub → default "queue")
+						0,             // $5 → wip_limit (default)
+						"queue",       // $6 → col_type (default)
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(inProgID))
 
-				// 6) INSERT subcolumn “Ready” under “development”
-				//   SQL:
-				//     INSERT INTO columns
-				//       (game_id, title, parent_id, order_index, wip_limit, col_type)
-				//     VALUES ($1,$2,$3,$4,$5,$6)
+				// 6) INSERT subcolumn “ready” under “development”
 				m.ExpectQuery(`INSERT INTO columns .* RETURNING id`).
 					WithArgs(
 						gameID,        // $1 → game_id
@@ -151,19 +132,16 @@ func TestSQLRepo_CreateGame(t *testing.T) {
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(readyID))
 
-				// 7) INSERT card into development - ready subcolumn SQL:
-				//   INSERT INTO cards
-				//      (game_id, column_id, title, class_of_service, value_estimate, selected_day, deployed_day)
-				//   VALUES ($1,$2,$3,$4,$5,$6,$7)
+				// 7) INSERT INTO cards (game_id, column_id, title, class_of_service, value_estimate, selected_day, deployed_day)
 				m.ExpectQuery(`INSERT INTO cards .* RETURNING id`).
 					WithArgs(
-						gameID,                // $1 → game_id
-						readyID,               // $2 → column_id (lookup from columnIDs["development - Ready"])
-						"development - ready", // $3 → title  (equal to c.Title)
-						"standard",            // $4 → class_of_service
-						"high",                // $5 → value_estimate
-						1,                     // $6 → selected_day
-						2,                     // $7 → deployed_day
+						gameID,       // $1 → game_id
+						readyID,      // $2 → column_id
+						"some-title", // $3 → title
+						"standard",   // $4 → class_of_service
+						"high",       // $5 → value_estimate
+						1,            // $6 → selected_day
+						2,            // $7 → deployed_day
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(cardID))
 
@@ -180,23 +158,29 @@ func TestSQLRepo_CreateGame(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			// Arrange: open sqlmock DB
 			db, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("error creating sqlmock: %v", err)
 			}
 			defer db.Close()
-			// set up expectations
+
+			// Set up the expected queries & rows
 			tc.prepare(mock, tc.args.cfg)
 
-			// instantiate repository via public constructor
+			// Act: call CreateGame on our repo backed by sqlmock
 			r := NewSQLRepo(db)
 			got, err := r.CreateGame(tc.args.ctx, tc.args.cfg)
+
+			// Assert: error expectation
 			if (err != nil) != tc.wantErr {
 				t.Errorf("CreateGame() error = %v, wantErr %v", err, tc.wantErr)
 			}
+			// Assert: returned gameID
 			if got != tc.want {
 				t.Errorf("CreateGame() = %v, want %v", got, tc.want)
 			}
+			// Verify all expected SQL calls were made
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Errorf("unmet expectations: %v", err)
 			}
