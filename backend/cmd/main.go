@@ -9,6 +9,10 @@
 // @license.url  https://opensource.org/licenses/MIT
 // @host         localhost:8080
 // @BasePath     /
+//
+// @securityDefinitions.apikey  BearerAuth
+// @in                         header
+// @name                       Authorization
 
 package main
 
@@ -86,12 +90,12 @@ func main() {
 	ph := handlers.NewPlayerHandler(playerSvc)
 	ch := handlers.NewColumnHandler(columnSvc)
 
-	router := server.NewRouter(ah, gh, ph, ch)
+	publicRouter := server.NewRouter(ah, gh, ph, ch)
 
 	// Configure HTTP server with timeouts
 	srv := &http.Server{
 		Addr:              ":8080",
-		Handler:           router,
+		Handler:           publicRouter,
 		ReadTimeout:       5 * time.Second,
 		ReadHeaderTimeout: 2 * time.Second,
 		WriteTimeout:      10 * time.Second,

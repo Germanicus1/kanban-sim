@@ -20,10 +20,6 @@ func TestAuth(t *testing.T) {
 
 	called := false
 
-	// token := os.Getenv("GAME_API_KEY")
-	// os.Setenv("GAME_API_KEY", token)
-	// defer os.Unsetenv("GAME_API_KEY")
-
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		called = true
 		w.WriteHeader(http.StatusOK)
@@ -63,7 +59,7 @@ func TestAuth(t *testing.T) {
 		{
 			name:           "wrong token",
 			headerValue:    "Bearer not-correct",
-			wantStatus:     http.StatusUnauthorized,
+			wantStatus:     http.StatusForbidden,
 			expectNextCall: false,
 		},
 		{

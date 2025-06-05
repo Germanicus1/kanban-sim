@@ -9,40 +9,49 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+type route struct {
+	Pattern string
+	Handler http.HandlerFunc
+}
+
 func NewRouter(
 	ah *handlers.AppHandler,
 	gh *handlers.GameHandler,
 	ph *handlers.PlayerHandler,
 	ch *handlers.ColumnsHandler,
-) http.Handler {
-	mainMux := http.NewServeMux()
-
+) (mux *http.ServeMux) {
 	// public pages
-	mainMux.HandleFunc("GET /", ah.Home)
-	mainMux.HandleFunc("GET /ping", ah.Ping)
-	mainMux.HandleFunc("GET /openapi.yaml", ah.OpenAPI)
-	mainMux.Handle("GET /apidocs/", httpSwagger.WrapHandler)
+	mux = http.NewServeMux()
 
-	privateMux := http.NewServeMux()
-	// games API
-	privateMux.HandleFunc("POST /games", gh.CreateGame)
-	privateMux.HandleFunc("GET /games", gh.ListGames)
-	privateMux.HandleFunc("GET /games/{id}", gh.GetGame)
-	privateMux.HandleFunc("GET /games/{id}/board", gh.GetBoard)
-	privateMux.HandleFunc("PATCH /games/{id}", gh.UpdateGame)
-	privateMux.HandleFunc("DELETE /games/{id}", gh.DeleteGame)
+	// ─── PRIVATE ROUTES (wrapped in APIKeyAuth) ─────────────────────────────────
+	privateRoutes := []route{
+		{"POST /games", gh.CreateGame},
+		{"GET /games", gh.ListGames},
+		{"GET /games/{id}", gh.GetGame},
+		{"GET /games/{id}/board", gh.GetBoard},
+		{"PATCH /games/{id}", gh.UpdateGame},
+		{"DELETE /games/{id}", gh.DeleteGame},
 
-	// players API
-	privateMux.HandleFunc("POST /players", ph.CreatePlayer)
-	privateMux.HandleFunc("GET /players/{id}", ph.GetPlayerByID)
-	privateMux.HandleFunc("PATCH /players/{id}", ph.UpdatePlayer)
-	privateMux.HandleFunc("DELETE /players", ph.DeletePlayer)
-	privateMux.HandleFunc("GET /games/{game_id}/players", ph.ListPlayersByGameID)
+		{"POST /players", ph.CreatePlayer},
+		{"GET /players/{id}", ph.GetPlayerByID},
+		{"PATCH /players/{id}", ph.UpdatePlayer},
+		{"DELETE /players", ph.DeletePlayer},
+		{"GET /games/{game_id}/players", ph.ListPlayersByGameID},
 
-	// columns API
-	privateMux.HandleFunc("GET /games/{id}/columns", ch.GetColumnsByGameID)
+		{"GET /games/{id}/columns", ch.GetColumnsByGameID},
+	}
 
-	mainMux.Handle("/", middleware.APIKeyAuth(privateMux))
+	for _, r := range privateRoutes {
+		// wrap each handler func in APIKeyAuth, then register with mux.Handle
+		// (http.HandlerFunc already implements http.Handler)
+		mux.Handle(r.Pattern, middleware.APIKeyAuth(http.HandlerFunc(r.Handler)))
+	}
 
-	return mainMux
+	// ─── PUBLIC ROUTES ────────────────────────────────────────────────────────
+	mux.HandleFunc("GET /", ah.Home)
+	mux.HandleFunc("GET /ping", ah.Ping)
+	mux.HandleFunc("GET /openapi.yaml", ah.OpenAPI)
+	mux.Handle("GET /apidocs/", httpSwagger.WrapHandler)
+
+	return mux
 }
