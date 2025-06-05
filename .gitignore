@@ -28,6 +28,7 @@ supabase/
 docs/
 main
 _scrap/
+.vscode
 
 # Go workspace file
 go.work
