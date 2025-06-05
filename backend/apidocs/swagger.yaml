@@ -127,10 +127,16 @@ paths:
                 $ref: '#/definitions/models.Game'
               type: array
             type: array
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: List all games
       tags:
       - games
@@ -144,10 +150,16 @@ paths:
           description: New game created
           schema:
             $ref: '#/definitions/response.CreateGameResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new game
       tags:
       - games
@@ -174,6 +186,10 @@ paths:
           description: Invalid or missing game ID
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Players not found
           schema:
@@ -186,6 +202,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: List all players by game ID
       tags:
       - players
@@ -208,6 +226,10 @@ paths:
           description: Invalid or missing game ID
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Game not found
           schema:
@@ -220,6 +242,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete game by ID
       tags:
       - games
@@ -243,6 +267,10 @@ paths:
           description: Invalid or missing game ID
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Game not found
           schema:
@@ -251,6 +279,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get game by ID
       tags:
       - games
@@ -280,6 +310,10 @@ paths:
           description: Invalid game ID or JSON payload
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Game not found
           schema:
@@ -292,6 +326,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update game day
       tags:
       - games
@@ -319,6 +355,10 @@ paths:
           description: Invalid or missing game ID
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Game not found
           schema:
@@ -331,6 +371,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: List columns by game ID
       tags:
       - columns
@@ -357,6 +399,10 @@ paths:
           description: Invalid or missing player ID
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Player not found
           schema:
@@ -369,6 +415,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a player
       tags:
       - players
@@ -397,6 +445,10 @@ paths:
           description: Invalid player ID or name
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "405":
           description: Method not allowed
           schema:
@@ -405,6 +457,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update a player
       tags:
       - players
@@ -433,6 +487,10 @@ paths:
           description: Invalid game ID or player name
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "405":
           description: Method not allowed
           schema:
@@ -441,6 +499,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new player
       tags:
       - players
@@ -465,6 +525,10 @@ paths:
           description: Invalid or missing player ID
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Missing or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Player not found
           schema:
@@ -477,7 +541,14 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get player by ID
       tags:
       - players
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

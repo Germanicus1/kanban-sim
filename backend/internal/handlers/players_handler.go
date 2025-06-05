@@ -36,8 +36,10 @@ type Player struct {
 // @Param        payload  body      models.CreatePlayerRequest  true  "Player creation payload"
 // @Success      200      {string}  string                     "Created player UUID"
 // @Failure      400      {object}  response.ErrorResponse     "Invalid game ID or player name"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      405      {object}  response.ErrorResponse     "Method not allowed"
 // @Failure      500      {object}  response.ErrorResponse     "Internal server error"
+// @Security    BearerAuth
 // @Router       /players [post]
 func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	// Only accept POST
@@ -75,9 +77,11 @@ func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 // @Param        id   path      string  true  "Game ID" Format(uuid)
 // @Success      200  {object}  models.Player            "Player retrieved successfully"
 // @Failure      400  {object}  response.ErrorResponse   "Invalid or missing player ID"
+// @Failure      403  {object}  response.ErrorResponse   "Missing or invalid token"
 // @Failure      404  {object}  response.ErrorResponse   "Player not found"
 // @Failure      405  {object}  response.ErrorResponse   "Method not allowed"
 // @Failure      500  {object}  response.ErrorResponse   "Internal server error"
+// @Security    BearerAuth
 // @Router       /players/{id} [get]
 func (h *PlayerHandler) GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -120,8 +124,10 @@ func (h *PlayerHandler) GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 // @Param        payload  body      models.UpdatePlayerRequest  true  "Player update payload"
 // @Success      200      {string}  string                      "Update successful (empty response)"
 // @Failure      400      {object}  response.ErrorResponse     "Invalid player ID or name"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      405      {object}  response.ErrorResponse     "Method not allowed"
 // @Failure      500      {object}  response.ErrorResponse     "Internal server error"
+// @Security    BearerAuth
 // @Router       /players [patch]
 func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPatch {
@@ -158,9 +164,11 @@ func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 // @Param        payload  body      models.DeletePlayerRequest  true  "Player deletion payload"
 // @Success      200      {string}  string                      "Player deleted successfully"
 // @Failure      400      {object}  response.ErrorResponse      "Invalid or missing player ID"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      404      {object}  response.ErrorResponse      "Player not found"
 // @Failure      405      {object}  response.ErrorResponse      "Method not allowed"
 // @Failure      500      {object}  response.ErrorResponse      "Internal server error"
+// @Security    BearerAuth
 // @Router       /players [delete]
 func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
@@ -198,9 +206,11 @@ func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
 // @Param        game_id   path      string           true  "Game ID"  Format(uuid)
 // @Success      200       {array}   models.Player    "List of players"
 // @Failure      400       {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      404       {object}  response.ErrorResponse  "Players not found"
 // @Failure      405       {object}  response.ErrorResponse  "Method not allowed"
 // @Failure      500       {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games/{game_id}/players [get]
 func (h *PlayerHandler) ListPlayersByGameID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -230,5 +240,3 @@ func (h *PlayerHandler) ListPlayersByGameID(w http.ResponseWriter, r *http.Reque
 	}
 	response.RespondWithData(w, players)
 }
-
-// ListPlayersByGameID retrieves all players for a specific game.

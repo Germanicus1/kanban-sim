@@ -36,7 +36,9 @@ func NewGameHandler(svc games.ServiceInterface) *GameHandler {
 // @Tags         games
 // @Produce      json
 // @Success      201  {object}  response.CreateGameResponse "New game created"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games [post]
 func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	// 1) Only accept POST
@@ -104,8 +106,10 @@ func (h *GameHandler) CreateGame(w http.ResponseWriter, r *http.Request) {
 // @Param        id   path      string  true  "Game ID" Format(uuid)
 // @Success      200  {object}  response.GameResponse   "Game retrieved successfully"
 // @Failure      400  {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      404  {object}  response.ErrorResponse  "Game not found"
 // @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games/{id} [get]
 func (h *GameHandler) GetGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -295,9 +299,11 @@ func (h *GameHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
 // @Param        body  body      updateGameRequest   true  "New game day"
 // @Success      204
 // @Failure      400   {object}  response.ErrorResponse  "Invalid game ID or JSON payload"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      404   {object}  response.ErrorResponse  "Game not found"
 // @Failure      405   {object}  response.ErrorResponse  "Method not allowed"
 // @Failure      500   {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games/{id} [patch]
 func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPatch {
@@ -339,9 +345,11 @@ func (h *GameHandler) UpdateGame(w http.ResponseWriter, r *http.Request) {
 // @Param        id   path      string  true  "Game ID"  Format(uuid)
 // @Success      204  "No Content"
 // @Failure      400   {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      404   {object}  response.ErrorResponse  "Game not found"
 // @Failure      405   {object}  response.ErrorResponse  "Method not allowed"
 // @Failure      500   {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games/{id} [delete]
 func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
@@ -375,7 +383,9 @@ func (h *GameHandler) DeleteGame(w http.ResponseWriter, r *http.Request) {
 // @Tags         games
 // @Produce      json
 // @Success      200  {array}   []models.Game  "List of games"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games [get]
 func (h *GameHandler) ListGames(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

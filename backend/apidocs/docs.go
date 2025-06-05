@@ -25,6 +25,11 @@ const docTemplate = `{
     "paths": {
         "/games": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns a list of all games in the system.",
                 "produces": [
                     "application/json"
@@ -46,6 +51,12 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -55,6 +66,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new game using the embedded default board; no request body required",
                 "produces": [
                     "application/json"
@@ -70,6 +86,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.CreateGameResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -81,6 +103,11 @@ const docTemplate = `{
         },
         "/games/{game_id}/players": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns a list of players belonging to the given game UUID.",
                 "produces": [
                     "application/json"
@@ -115,6 +142,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Players not found",
                         "schema": {
@@ -138,6 +171,11 @@ const docTemplate = `{
         },
         "/games/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the full game record for the given UUID.",
                 "produces": [
                     "application/json"
@@ -169,6 +207,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Game not found",
                         "schema": {
@@ -184,6 +228,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Removes the game record identified by the given UUID.",
                 "produces": [
                     "application/json"
@@ -212,6 +261,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Game not found",
                         "schema": {
@@ -233,6 +288,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Updates the specified game’s current day by its UUID.",
                 "consumes": [
                     "application/json"
@@ -273,6 +333,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Game not found",
                         "schema": {
@@ -296,6 +362,11 @@ const docTemplate = `{
         },
         "/games/{id}/columns": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the list of columns (including subcolumns) belonging to the specified game UUID.",
                 "produces": [
                     "application/json"
@@ -330,6 +401,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Game not found",
                         "schema": {
@@ -353,6 +430,11 @@ const docTemplate = `{
         },
         "/players": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "## CreatePlayer handles the creation of a new player in the game.\n\nIt expects a **POST request with a JSON payload** containing the player's details. The payload **must include a valid GameID and a non-empty Name**. If the request method is not POST, it responds with a \"method not allowed\" error. If the payload is invalid or fails validation, it responds with a \"bad request\" error. On successful creation, it returns the created player data. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
                 "consumes": [
                     "application/json"
@@ -388,6 +470,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "405": {
                         "description": "Method not allowed",
                         "schema": {
@@ -403,6 +491,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Deletes the player identified by the given UUID.",
                 "consumes": [
                     "application/json"
@@ -438,6 +531,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Player not found",
                         "schema": {
@@ -459,6 +558,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "## UpdatePlayer handles HTTP PUT requests to update a player's information\n\nIt validates the request method, decodes the request payload, and ensures the payload contains valid player data. If the data is valid, it calls the service layer to update the player in the database. In case of errors, it responds with appropriate HTTP status codes and error messages.\n",
                 "consumes": [
                     "application/json"
@@ -494,6 +598,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Missing or invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "405": {
                         "description": "Method not allowed",
                         "schema": {
@@ -511,6 +621,11 @@ const docTemplate = `{
         },
         "/players/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the full player record for the given player UUID.",
                 "produces": [
                     "application/json"
@@ -538,6 +653,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid or missing player ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Missing or invalid token",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -713,6 +834,13 @@ const docTemplate = `{
                     "example": true
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

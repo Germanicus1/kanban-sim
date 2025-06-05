@@ -25,9 +25,11 @@ func NewColumnHandler(svc columns.ColumnServiceInterface) *ColumnsHandler {
 // @Param        id   path      string           true  "Game ID"   Format(uuid)
 // @Success      200  {array}   models.Column    "List of columns"
 // @Failure      400  {object}  response.ErrorResponse  "Invalid or missing game ID"
+// @Failure      403  {object}  response.ErrorResponse  "Missing or invalid token"
 // @Failure      404  {object}  response.ErrorResponse  "Game not found"
 // @Failure      405  {object}  response.ErrorResponse  "Method not allowed"
 // @Failure      500  {object}  response.ErrorResponse  "Internal server error"
+// @Security    BearerAuth
 // @Router       /games/{id}/columns [get]
 func (h *ColumnsHandler) GetColumnsByGameID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
